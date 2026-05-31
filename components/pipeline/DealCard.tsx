@@ -27,7 +27,7 @@ export function DealCard({ deal }: DealCardProps) {
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="p-3 shadow-sm hover:shadow-md transition-shadow cursor-default bg-card">
+      <Card className="p-3 shadow-sm hover:shadow-md transition-all duration-150 cursor-default bg-card">
         <div className="flex items-start gap-2">
           <button
             {...attributes}

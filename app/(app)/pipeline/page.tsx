@@ -38,11 +38,14 @@ export default async function PipelinePage() {
         </p>
       </div>
 
-      <KanbanBoard
-        deals={(deals ?? []) as DealWithLead[]}
-        workspaceId={workspaceId}
-        leads={leads ?? []}
-      />
+      {/* Negative margin lets the board break out of page padding on small screens */}
+      <div className="-mx-4 lg:mx-0 px-4 lg:px-0">
+        <KanbanBoard
+          deals={(deals ?? []) as DealWithLead[]}
+          workspaceId={workspaceId}
+          leads={leads ?? []}
+        />
+      </div>
     </div>
   )
 }

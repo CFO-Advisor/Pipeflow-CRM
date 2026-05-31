@@ -39,8 +39,8 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Leads</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {initialLeads.length} lead{initialLeads.length !== 1 ? 's' : ''} no workspace
@@ -48,22 +48,22 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
         </div>
         <Button
           onClick={() => setShowForm(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
           disabled={planLimitReached}
           title={planLimitReached ? 'Limite do plano Free atingido' : undefined}
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo lead
+          <Plus className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Novo lead</span>
         </Button>
       </div>
 
       {planLimitReached && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
-          <p className="text-sm text-amber-800">
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-amber-800 dark:text-amber-300">
             Você atingiu o limite de 50 leads do plano Free.
           </p>
           <Link href="/settings/billing">
-            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white flex-shrink-0">
               Fazer upgrade
             </Button>
           </Link>

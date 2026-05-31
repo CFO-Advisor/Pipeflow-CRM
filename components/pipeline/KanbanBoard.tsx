@@ -76,15 +76,16 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-6">
+      <div className="flex gap-3 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory lg:snap-none [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.300)_transparent] dark:[scrollbar-color:theme(colors.slate.700)_transparent]">
         {STAGES.map((stage) => (
-          <KanbanColumn
-            key={stage}
-            stage={stage}
-            deals={dealsByStage[stage]}
-            workspaceId={workspaceId}
-            leads={leads}
-          />
+          <div key={stage} className="snap-start snap-always flex-shrink-0">
+            <KanbanColumn
+              stage={stage}
+              deals={dealsByStage[stage]}
+              workspaceId={workspaceId}
+              leads={leads}
+            />
+          </div>
         ))}
       </div>
 

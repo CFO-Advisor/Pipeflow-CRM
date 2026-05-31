@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local parallel dev directory (not part of this deployment)
+/pipeflow
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

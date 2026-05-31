@@ -32,7 +32,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const publicPaths = ['/', '/login', '/register']
-  const isPublic = publicPaths.includes(pathname) || pathname.startsWith('/api/webhooks')
+  const isPublic =
+    publicPaths.includes(pathname) ||
+    pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/api/webhooks')
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()

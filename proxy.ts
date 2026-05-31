@@ -25,9 +25,12 @@ export async function proxy(request: NextRequest) {
     }
   )
 
+  // getSession() decodes the JWT locally — no network call, avoids SSL issues.
+  // Full server-side verification happens in (app)/layout.tsx via getUser().
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
+  const user = session?.user ?? null
 
   const { pathname } = request.nextUrl
 
@@ -43,7 +46,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (user && (pathname === '/login' || pathname === '/register')) {
+  if (user && pathname === '/login') {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

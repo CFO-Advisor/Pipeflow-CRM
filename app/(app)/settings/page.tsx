@@ -35,11 +35,8 @@ export default async function SettingsPage() {
   const isAdmin = currentMember?.role === 'admin'
   const memberLimitReached = workspace.plan === 'free' && (memberRows?.length ?? 0) >= 2
 
-  const userIds = (memberRows ?? []).map((m) => m.user_id).filter(Boolean)
-  const { data: usersData } = await supabase.auth.admin?.listUsers?.() ?? { data: null }
-
   const members = (memberRows ?? []).map((m) => {
-    const email = m.invited_email ?? m.user_id ?? 'Desconhecido'
+    const email = m.invited_email ?? 'Membro'
     return { ...m, email, name: undefined as string | undefined }
   })
 

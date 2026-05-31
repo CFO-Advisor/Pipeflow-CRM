@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useOptimistic, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -46,7 +46,7 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
     setActiveId(active.id as string)
   }
 
-  async function handleDragEnd({ active, over }: DragEndEvent) {
+  function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveId(null)
     if (!over) return
 
@@ -57,14 +57,13 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
 
     if (draggedDeal.stage === overStage && active.id === over.id) return
 
-    const newDeals = deals.map((d) =>
-      d.id === active.id ? { ...d, stage: overStage } : d
-    )
-    setDeals(newDeals)
-
-    startTransition(async () => {
-      await updateDealStage(draggedDeal.id, overStage)
+    startTransition(() => {
+      setDeals((prev) =>
+        prev.map((d) => (d.id === active.id ? { ...d, stage: overStage } : d))
+      )
     })
+
+    updateDealStage(draggedDeal.id, overStage)
   }
 
   const dealsByStage = STAGES.reduce<Record<DealStage, DealWithLead[]>>(

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { WorkspaceSwitcher } from '@/components/layout/WorkspaceSwitcher'
 import { UserMenu } from '@/components/layout/UserMenu'
@@ -15,7 +16,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/login')
 
-  const { data: memberships } = await supabase
+  const service = createServiceClient()
+  const { data: memberships } = await service
     .from('workspace_members')
     .select('workspace_id, workspaces(*)')
     .eq('user_id', user.id)
@@ -31,6 +33,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const savedId = cookieStore.get('current_workspace_id')?.value
   const currentWorkspace =
     workspaces.find((w) => w.id === savedId) ?? workspaces[0]
+
+  // Cookie not set yet (first login / new workspace) — set it via route handler
+  if (!savedId) {
+    redirect(`/api/workspace/activate?id=${currentWorkspace.id}&next=/dashboard`)
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -54,7 +61,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
         <div className="p-4 border-t border-slate-800">
           <UserMenu
-            email={user.email!}
+            email={user.email ?? ''}
             name={user.user_metadata?.full_name}
           />
         </div>

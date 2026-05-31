@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { createWorkspaceAction } from '@/app/actions/workspace'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,15 +18,35 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [existingUser, setExistingUser] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setExistingUser(data.user.id)
+    })
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
+    // Usuário já autenticado mas sem workspace — apenas cria o workspace
+    if (existingUser) {
+      const result = await createWorkspaceAction(workspaceName)
+      if (result.success) {
+        router.refresh()
+        router.push('/dashboard')
+      } else {
+        setError(result.error ?? 'Erro ao criar workspace.')
+        setLoading(false)
+      }
+      return
+    }
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const supabase = createClient()
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -37,6 +58,19 @@ export default function RegisterPage() {
     if (signUpError) {
       setError(signUpError.message ?? 'Erro ao criar conta.')
       setLoading(false)
+      return
+    }
+
+    // Supabase retornou sessão imediata (confirmação de e-mail desativada)
+    if (signUpData.session && signUpData.user) {
+      const result = await createWorkspaceAction(workspaceName)
+      if (result.success) {
+        router.refresh()
+        router.push('/dashboard')
+      } else {
+        setError(result.error ?? 'Conta criada, mas falha ao criar workspace.')
+        setLoading(false)
+      }
       return
     }
 
@@ -53,8 +87,12 @@ export default function RegisterPage() {
             </div>
             <span className="text-xl font-bold text-slate-900">PipeFlow</span>
           </div>
-          <CardTitle className="text-2xl">Criar conta grátis</CardTitle>
-          <CardDescription>Comece a organizar suas vendas hoje</CardDescription>
+          <CardTitle className="text-2xl">
+            {existingUser ? 'Criar workspace' : 'Criar conta grátis'}
+          </CardTitle>
+          <CardDescription>
+            {existingUser ? 'Dê um nome para o seu workspace para continuar' : 'Comece a organizar suas vendas hoje'}
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -63,17 +101,19 @@ export default function RegisterPage() {
                 {error}
               </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="name">Seu nome</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="João Silva"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+            {!existingUser && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Seu nome</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="João Silva"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required={!existingUser}
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="workspace">Nome da empresa / workspace</Label>
               <Input
@@ -85,40 +125,48 @@ export default function RegisterPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={6}
-                required
-              />
-            </div>
+            {!existingUser && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required={!existingUser}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    minLength={6}
+                    required={!existingUser}
+                  />
+                </div>
+              </>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-              {loading ? 'Criando conta...' : 'Criar conta grátis'}
+              {loading
+                ? existingUser ? 'Criando workspace...' : 'Criando conta...'
+                : existingUser ? 'Criar workspace' : 'Criar conta grátis'}
             </Button>
-            <p className="text-sm text-slate-600 text-center">
-              Já tem conta?{' '}
-              <Link href="/login" className="text-blue-600 hover:underline font-medium">
-                Entrar
-              </Link>
-            </p>
+            {!existingUser && (
+              <p className="text-sm text-slate-600 text-center">
+                Já tem conta?{' '}
+                <Link href="/login" className="text-blue-600 hover:underline font-medium">
+                  Entrar
+                </Link>
+              </p>
+            )}
           </CardFooter>
         </form>
       </Card>

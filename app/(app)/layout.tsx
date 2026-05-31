@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { WorkspaceSwitcher } from '@/components/layout/WorkspaceSwitcher'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { MobileSidebar } from '@/components/layout/MobileSidebar'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import type { Workspace } from '@/types'
 
@@ -35,14 +36,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const currentWorkspace =
     workspaces.find((w) => w.id === savedId) ?? workspaces[0]
 
-  // Cookie not set yet (first login / new workspace) — set it via route handler
   if (!savedId) {
     redirect(`/api/workspace/activate?id=${currentWorkspace.id}&next=/dashboard`)
   }
 
+  const userEmail = user.email ?? ''
+  const userName = user.user_metadata?.full_name as string | undefined
+
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col min-h-screen fixed left-0 top-0 z-40">
+      {/* Desktop sidebar — hidden below lg */}
+      <aside className="hidden lg:flex w-64 bg-slate-900 text-slate-100 flex-col min-h-screen fixed left-0 top-0 z-40">
         <div className="p-4 border-b border-slate-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -62,16 +66,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
         <div className="p-4 border-t border-slate-800 flex items-center gap-2">
           <div className="flex-1 min-w-0">
-            <UserMenu
-              email={user.email ?? ''}
-              name={user.user_metadata?.full_name}
-            />
+            <UserMenu email={userEmail} name={userName} />
           </div>
           <ThemeToggle />
         </div>
       </aside>
 
-      <main className="flex-1 ml-64 p-8">
+      {/* Mobile sidebar drawer */}
+      <MobileSidebar
+        workspaces={workspaces}
+        currentWorkspace={currentWorkspace}
+        userEmail={userEmail}
+        userName={userName}
+      />
+
+      {/* Main content: full-width on mobile, offset on desktop */}
+      <main className="flex-1 lg:ml-64 min-w-0 px-4 py-6 pt-20 lg:pt-0 lg:p-8">
         {children}
       </main>
     </div>

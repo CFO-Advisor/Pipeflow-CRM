@@ -39,8 +39,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
           <DropdownMenuItem
             key={ws.id}
             onClick={() => {
-              document.cookie = `current_workspace_id=${ws.id}; path=/`
-              router.refresh()
+              router.push(`/api/workspace/activate?id=${ws.id}&next=/dashboard`)
               setOpen(false)
             }}
             className="cursor-pointer"

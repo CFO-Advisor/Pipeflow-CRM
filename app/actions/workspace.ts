@@ -5,9 +5,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 export async function createWorkspaceAction(workspaceName: string) {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session?.user) return { error: 'Não autenticado' }
+  if (!user) return { error: 'Não autenticado' }
 
   const slug = workspaceName
     .toLowerCase()
@@ -30,7 +30,7 @@ export async function createWorkspaceAction(workspaceName: string) {
 
   const { error: memberError } = await service
     .from('workspace_members')
-    .insert({ workspace_id: workspace.id, user_id: session.user.id, role: 'admin' })
+    .insert({ workspace_id: workspace.id, user_id: user.id, role: 'admin' })
 
   if (memberError) {
     await service.from('workspaces').delete().eq('id', workspace.id)

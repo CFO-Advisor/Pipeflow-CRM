@@ -41,7 +41,7 @@ export default async function SettingsPage() {
   })
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
         <p className="text-muted-foreground text-sm mt-1">Gerencie seu workspace e equipe</p>
@@ -63,7 +63,7 @@ export default async function SettingsPage() {
             </Badge>
           </div>
           <Separator />
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-foreground">Plano atual</p>
               <p className="text-xs text-muted-foreground">
@@ -73,7 +73,7 @@ export default async function SettingsPage() {
               </p>
             </div>
             <Link href="/settings/billing">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="flex-shrink-0">
                 {workspace.plan === 'pro' ? 'Gerenciar assinatura' : 'Fazer upgrade'}
               </Button>
             </Link>

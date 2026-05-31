@@ -47,11 +47,15 @@ export default async function LeadDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/leads" className="text-muted-foreground hover:text-foreground transition-colors">
+      <div className="flex items-center gap-3 flex-wrap">
+        <Link
+          href="/leads"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1 rounded-md hover:bg-muted"
+          aria-label="Voltar para Leads"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">{lead.name}</h1>
+        <h1 className="text-2xl font-bold text-foreground flex-1 min-w-0 truncate">{lead.name}</h1>
         <Badge variant="outline">{lead.status === 'active' ? 'Ativo' : 'Inativo'}</Badge>
       </div>
 
@@ -60,7 +64,7 @@ export default async function LeadDetailPage({ params }: Props) {
           <CardTitle className="text-base">Informações do contato</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             {lead.email && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="w-4 h-4 text-muted-foreground" />

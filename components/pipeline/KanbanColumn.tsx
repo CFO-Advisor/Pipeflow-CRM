@@ -31,7 +31,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
   const { setNodeRef, isOver } = useDroppable({ id: stage })
 
   return (
-    <div className="flex-shrink-0 w-72">
+    <div className="w-[17rem] sm:w-72">
       <div className={`rounded-t-lg ${config.headerColor} px-3 py-2 flex items-center justify-between`}>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-white">{config.label}</span>
@@ -52,10 +52,17 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
       <SortableContext items={deals.map((d) => d.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
-          className={`min-h-[400px] rounded-b-lg p-2 space-y-2 transition-colors ${
+          className={`min-h-[300px] lg:min-h-[400px] rounded-b-lg p-2 space-y-2 transition-colors ${
             isOver ? 'bg-blue-100 dark:bg-blue-900/30' : config.bgColor
           }`}
         >
+          {deals.length === 0 && !isOver && (
+            <div className="flex items-center justify-center h-24 mt-4">
+              <p className="text-xs text-muted-foreground/50 text-center px-2">
+                Arraste cards aqui
+              </p>
+            </div>
+          )}
           {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} />
           ))}

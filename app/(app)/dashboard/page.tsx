@@ -73,7 +73,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground text-sm mt-1">{workspace?.name}</p>
       </div>
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <MetricCard
           label="Total de Leads"
           value={leads?.length ?? 0}
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Funil de Vendas</CardTitle>

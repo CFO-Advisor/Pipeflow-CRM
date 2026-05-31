@@ -31,9 +31,13 @@ export default async function BillingPage() {
   const isPro = workspace.plan === 'pro'
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl w-full space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/settings" className="text-muted-foreground hover:text-foreground">
+        <Link
+          href="/settings"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1 rounded-md hover:bg-muted"
+          aria-label="Voltar para Configurações"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold text-foreground">Plano e cobrança</h1>
@@ -58,7 +62,7 @@ export default async function BillingPage() {
       </Card>
 
       {!isPro && (
-        <Card className="border-blue-600 ring-2 ring-blue-100">
+        <Card className="border-blue-600 ring-2 ring-blue-100 dark:ring-blue-900">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Crown className="w-5 h-5 text-blue-600" />

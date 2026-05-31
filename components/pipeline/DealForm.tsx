@@ -107,7 +107,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads 
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="value">Valor (R$)</Label>
               <Input
@@ -130,11 +130,11 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads 
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" disabled={loading}>
               {loading ? 'Criando...' : 'Criar negócio'}
             </Button>
           </DialogFooter>

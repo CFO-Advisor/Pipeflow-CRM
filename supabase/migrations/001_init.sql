@@ -106,7 +106,12 @@ create policy "workspace_members_update" on workspaces
   );
 
 create policy "workspace_insert" on workspaces
-  for insert with check (true);
+  for insert with check (
+    auth.uid() is not null
+    and plan = 'free'
+    and stripe_customer_id is null
+    and stripe_subscription_id is null
+  );
 
 -- Workspace members
 create policy "workspace_members_select" on workspace_members

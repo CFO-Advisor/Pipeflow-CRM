@@ -75,7 +75,7 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
   )
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext id="kanban-dnd" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex gap-3 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory lg:snap-none [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.300)_transparent] dark:[scrollbar-color:theme(colors.slate.700)_transparent]">
         {STAGES.map((stage) => (
           <div key={stage} className="snap-start snap-always flex-shrink-0">

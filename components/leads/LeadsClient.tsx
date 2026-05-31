@@ -41,8 +41,8 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Leads</h1>
+          <p className="text-muted-foreground text-sm mt-1">
             {initialLeads.length} lead{initialLeads.length !== 1 ? 's' : ''} no workspace
           </p>
         </div>
@@ -83,7 +83,7 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
       <div className="space-y-2">
         {filtered.length === 0 ? (
           <Card className="p-12 text-center">
-            <p className="text-slate-500">
+            <p className="text-muted-foreground">
               {search ? 'Nenhum lead encontrado.' : 'Adicione seu primeiro lead.'}
             </p>
           </Card>
@@ -99,22 +99,22 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-slate-900 hover:text-blue-600 transition-colors">
+                      <p className="font-medium text-foreground hover:text-blue-600 transition-colors">
                         {lead.name}
                       </p>
                       <div className="flex items-center flex-wrap gap-3 mt-1">
                         {lead.company && (
-                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Building2 className="w-3 h-3" /> {lead.company}
                           </span>
                         )}
                         {lead.email && (
-                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Mail className="w-3 h-3" /> {lead.email}
                           </span>
                         )}
                         {lead.phone && (
-                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Phone className="w-3 h-3" /> {lead.phone}
                           </span>
                         )}

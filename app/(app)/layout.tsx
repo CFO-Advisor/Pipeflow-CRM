@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { WorkspaceSwitcher } from '@/components/layout/WorkspaceSwitcher'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import type { Workspace } from '@/types'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -40,7 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-background">
       <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col min-h-screen fixed left-0 top-0 z-40">
         <div className="p-4 border-b border-slate-800">
           <div className="flex items-center gap-2 mb-4">
@@ -59,11 +60,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Sidebar />
         </div>
 
-        <div className="p-4 border-t border-slate-800">
-          <UserMenu
-            email={user.email ?? ''}
-            name={user.user_metadata?.full_name}
-          />
+        <div className="p-4 border-t border-slate-800 flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <UserMenu
+              email={user.email ?? ''}
+              name={user.user_metadata?.full_name}
+            />
+          </div>
+          <ThemeToggle />
         </div>
       </aside>
 

@@ -43,8 +43,8 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Configurações</h1>
-        <p className="text-slate-500 text-sm mt-1">Gerencie seu workspace e equipe</p>
+        <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
+        <p className="text-muted-foreground text-sm mt-1">Gerencie seu workspace e equipe</p>
       </div>
 
       <Card>
@@ -55,8 +55,8 @@ export default async function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-slate-900">{workspace.name}</p>
-              <p className="text-xs text-slate-500">{workspace.slug}</p>
+              <p className="font-medium text-foreground">{workspace.name}</p>
+              <p className="text-xs text-muted-foreground">{workspace.slug}</p>
             </div>
             <Badge className={workspace.plan === 'pro' ? 'bg-blue-600' : 'bg-slate-500'}>
               {workspace.plan === 'pro' ? 'Pro' : 'Free'}
@@ -65,8 +65,8 @@ export default async function SettingsPage() {
           <Separator />
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-700">Plano atual</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm font-medium text-foreground">Plano atual</p>
+              <p className="text-xs text-muted-foreground">
                 {workspace.plan === 'free'
                   ? 'Até 2 colaboradores e 50 leads'
                   : 'Colaboradores e leads ilimitados'}

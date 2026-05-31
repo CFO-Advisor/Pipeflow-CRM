@@ -32,7 +32,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
         <ChevronsUpDown className="w-4 h-4 flex-shrink-0 text-slate-400" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 ml-2" align="start">
-        <DropdownMenuLabel className="text-xs text-slate-500 uppercase tracking-wider">
+        <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
           Workspaces
         </DropdownMenuLabel>
         {workspaces.map((ws) => (

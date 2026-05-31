@@ -48,10 +48,10 @@ export default async function LeadDetailPage({ params }: Props) {
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/leads" className="text-slate-400 hover:text-slate-600 transition-colors">
+        <Link href="/leads" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900">{lead.name}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{lead.name}</h1>
         <Badge variant="outline">{lead.status === 'active' ? 'Ativo' : 'Inativo'}</Badge>
       </div>
 
@@ -62,31 +62,31 @@ export default async function LeadDetailPage({ params }: Props) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4 text-sm">
             {lead.email && (
-              <div className="flex items-center gap-2 text-slate-600">
-                <Mail className="w-4 h-4 text-slate-400" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="w-4 h-4 text-muted-foreground" />
                 {lead.email}
               </div>
             )}
             {lead.phone && (
-              <div className="flex items-center gap-2 text-slate-600">
-                <Phone className="w-4 h-4 text-slate-400" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Phone className="w-4 h-4 text-muted-foreground" />
                 {lead.phone}
               </div>
             )}
             {lead.company && (
-              <div className="flex items-center gap-2 text-slate-600">
-                <Building2 className="w-4 h-4 text-slate-400" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Building2 className="w-4 h-4 text-muted-foreground" />
                 {lead.company}
               </div>
             )}
             {lead.position && (
-              <div className="flex items-center gap-2 text-slate-600">
-                <Briefcase className="w-4 h-4 text-slate-400" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Briefcase className="w-4 h-4 text-muted-foreground" />
                 {lead.position}
               </div>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-4">
+          <p className="text-xs text-muted-foreground mt-4">
             Criado em {formatDate(lead.created_at)}
           </p>
         </CardContent>
@@ -109,7 +109,7 @@ export default async function LeadDetailPage({ params }: Props) {
         <CardHeader>
           <CardTitle className="text-base">
             Histórico de atividades
-            <span className="ml-2 text-sm font-normal text-slate-500">
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
               ({activities.length})
             </span>
           </CardTitle>

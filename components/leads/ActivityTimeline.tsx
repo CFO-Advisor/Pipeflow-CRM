@@ -6,7 +6,7 @@ const activityConfig: Record<ActivityType, { icon: React.ComponentType<{ classNa
   call: { icon: Phone, label: 'Ligação', color: 'bg-blue-100 text-blue-600' },
   email: { icon: Mail, label: 'E-mail', color: 'bg-purple-100 text-purple-600' },
   meeting: { icon: Users, label: 'Reunião', color: 'bg-orange-100 text-orange-600' },
-  note: { icon: FileText, label: 'Nota', color: 'bg-slate-100 text-slate-600' },
+  note: { icon: FileText, label: 'Nota', color: 'bg-muted text-muted-foreground' },
 }
 
 interface ActivityTimelineProps {
@@ -16,7 +16,7 @@ interface ActivityTimelineProps {
 export function ActivityTimeline({ activities }: ActivityTimelineProps) {
   if (activities.length === 0) {
     return (
-      <p className="text-sm text-slate-500 text-center py-8">
+      <p className="text-sm text-muted-foreground text-center py-8">
         Nenhuma atividade registrada ainda.
       </p>
     )
@@ -37,13 +37,13 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-medium text-slate-700">{config.label}</span>
-                <span className="text-xs text-slate-400">por {authorName}</span>
-                <span className="text-xs text-slate-400 ml-auto">
+                <span className="text-xs font-medium text-foreground">{config.label}</span>
+                <span className="text-xs text-muted-foreground">por {authorName}</span>
+                <span className="text-xs text-muted-foreground ml-auto">
                   {formatRelativeDate(activity.created_at)}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 mt-1 leading-relaxed">{activity.description}</p>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{activity.description}</p>
             </div>
           </div>
         )

@@ -69,8 +69,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-1">{workspace?.name}</p>
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground text-sm mt-1">{workspace?.name}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">

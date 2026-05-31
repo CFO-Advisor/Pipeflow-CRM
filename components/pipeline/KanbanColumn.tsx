@@ -10,12 +10,12 @@ import { DealForm } from './DealForm'
 import type { DealStage, DealWithLead, Lead } from '@/types'
 
 const stageConfig: Record<DealStage, { label: string; headerColor: string; bgColor: string }> = {
-  new_lead: { label: 'Novo Lead', headerColor: 'bg-blue-600', bgColor: 'bg-blue-50' },
-  contacted: { label: 'Contato Realizado', headerColor: 'bg-blue-500', bgColor: 'bg-blue-50' },
-  proposal_sent: { label: 'Proposta Enviada', headerColor: 'bg-indigo-600', bgColor: 'bg-indigo-50' },
-  negotiation: { label: 'Negociação', headerColor: 'bg-purple-600', bgColor: 'bg-purple-50' },
-  closed_won: { label: 'Fechado Ganho', headerColor: 'bg-green-600', bgColor: 'bg-green-50' },
-  closed_lost: { label: 'Fechado Perdido', headerColor: 'bg-red-600', bgColor: 'bg-red-50' },
+  new_lead: { label: 'Novo Lead', headerColor: 'bg-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-950/30' },
+  contacted: { label: 'Contato Realizado', headerColor: 'bg-blue-500', bgColor: 'bg-blue-50 dark:bg-blue-950/30' },
+  proposal_sent: { label: 'Proposta Enviada', headerColor: 'bg-indigo-600', bgColor: 'bg-indigo-50 dark:bg-indigo-950/30' },
+  negotiation: { label: 'Negociação', headerColor: 'bg-purple-600', bgColor: 'bg-purple-50 dark:bg-purple-950/30' },
+  closed_won: { label: 'Fechado Ganho', headerColor: 'bg-green-600', bgColor: 'bg-green-50 dark:bg-green-950/30' },
+  closed_lost: { label: 'Fechado Perdido', headerColor: 'bg-red-600', bgColor: 'bg-red-50 dark:bg-red-950/30' },
 }
 
 interface KanbanColumnProps {
@@ -53,7 +53,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
         <div
           ref={setNodeRef}
           className={`min-h-[400px] rounded-b-lg p-2 space-y-2 transition-colors ${
-            isOver ? 'bg-blue-100' : config.bgColor
+            isOver ? 'bg-blue-100 dark:bg-blue-900/30' : config.bgColor
           }`}
         >
           {deals.map((deal) => (

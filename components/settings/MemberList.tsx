@@ -24,7 +24,7 @@ export function MemberList({ members, currentUserId, isAdmin }: MemberListProps)
   }
 
   return (
-    <div className="divide-y divide-slate-100">
+    <div className="divide-y divide-border">
       {members.map((member) => (
         <div key={member.id} className="flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
@@ -34,8 +34,8 @@ export function MemberList({ members, currentUserId, isAdmin }: MemberListProps)
               </span>
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-900">{member.name ?? member.email}</p>
-              {member.name && <p className="text-xs text-slate-500">{member.email}</p>}
+              <p className="text-sm font-medium text-foreground">{member.name ?? member.email}</p>
+              {member.name && <p className="text-xs text-muted-foreground">{member.email}</p>}
               {!member.user_id && member.invited_email && (
                 <p className="text-xs text-amber-600">Convite pendente</p>
               )}

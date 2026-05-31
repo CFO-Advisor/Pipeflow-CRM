@@ -33,10 +33,10 @@ export default async function BillingPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/settings" className="text-slate-400 hover:text-slate-600">
+        <Link href="/settings" className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900">Plano e cobrança</h1>
+        <h1 className="text-2xl font-bold text-foreground">Plano e cobrança</h1>
       </div>
 
       <Card>
@@ -49,7 +49,7 @@ export default async function BillingPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600 text-sm">
+          <p className="text-muted-foreground text-sm">
             {isPro
               ? 'Você tem acesso a todos os recursos Pro: colaboradores e leads ilimitados.'
               : 'Você está no plano gratuito: até 2 colaboradores e 50 leads.'}
@@ -66,8 +66,8 @@ export default async function BillingPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-2xl font-bold text-slate-900">
-              R$ 49<span className="text-base font-normal text-slate-500">/mês</span>
+            <p className="text-2xl font-bold text-foreground">
+              R$ 49<span className="text-base font-normal text-muted-foreground">/mês</span>
             </p>
             <ul className="space-y-2">
               {[
@@ -75,7 +75,7 @@ export default async function BillingPage() {
                 'Leads ilimitados',
                 'Suporte prioritário',
               ].map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
+                <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                   {f}
                 </li>
@@ -96,7 +96,7 @@ export default async function BillingPage() {
             <CardTitle className="text-base">Gerenciar assinatura</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Acesse o portal do Stripe para atualizar seu método de pagamento, ver faturas ou cancelar.
             </p>
             <BillingActions

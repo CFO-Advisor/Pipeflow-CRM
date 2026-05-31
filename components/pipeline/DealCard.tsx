@@ -27,20 +27,20 @@ export function DealCard({ deal }: DealCardProps) {
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="p-3 shadow-sm hover:shadow-md transition-shadow cursor-default bg-white">
+      <Card className="p-3 shadow-sm hover:shadow-md transition-shadow cursor-default bg-card">
         <div className="flex items-start gap-2">
           <button
             {...attributes}
             {...listeners}
-            className="mt-0.5 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0"
+            className="mt-0.5 text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing flex-shrink-0"
             aria-label="Arrastar"
           >
             <GripVertical className="w-4 h-4" />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900 leading-snug">{deal.title}</p>
+            <p className="text-sm font-medium text-foreground leading-snug">{deal.title}</p>
             {deal.lead && (
-              <p className="text-xs text-slate-500 mt-0.5 truncate">
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 <User className="w-3 h-3 inline mr-1" />
                 {deal.lead.name}
                 {deal.lead.company && ` · ${deal.lead.company}`}
@@ -56,7 +56,7 @@ export function DealCard({ deal }: DealCardProps) {
               {deal.deadline && (
                 <span
                   className={`flex items-center gap-1 text-xs ${
-                    isOverdue ? 'text-red-600 font-medium' : 'text-slate-400'
+                    isOverdue ? 'text-red-600 font-medium' : 'text-muted-foreground'
                   }`}
                 >
                   <Calendar className="w-3 h-3" />

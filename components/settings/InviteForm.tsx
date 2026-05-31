@@ -57,7 +57,7 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
       )}
       <div className="space-y-2">
         <Label htmlFor="invite-email">E-mail do colaborador</Label>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Input
             id="invite-email"
             type="email"
@@ -66,10 +66,11 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
             onChange={(e) => setEmail(e.target.value)}
             disabled={disabled}
             required
+            className="flex-1"
           />
           <Button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+            className="bg-blue-600 hover:bg-blue-700 sm:flex-shrink-0"
             disabled={loading || disabled}
           >
             <UserPlus className="w-4 h-4 mr-2" />
@@ -78,7 +79,7 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
         </div>
       </div>
       {disabled && (
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+        <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded p-2">
           Limite de 2 colaboradores do plano Free atingido. Faça upgrade para Pro para convidar mais.
         </p>
       )}

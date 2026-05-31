@@ -56,6 +56,13 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
             isOver ? 'bg-blue-100 dark:bg-blue-900/30' : config.bgColor
           }`}
         >
+          {deals.length === 0 && !isOver && (
+            <div className="flex items-center justify-center h-24 mt-4">
+              <p className="text-xs text-muted-foreground/50 text-center px-2">
+                Arraste cards aqui
+              </p>
+            </div>
+          )}
           {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} />
           ))}

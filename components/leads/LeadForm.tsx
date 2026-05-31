@@ -87,8 +87,8 @@ export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReach
               {error}
             </div>
           )}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2 space-y-2">
               <Label htmlFor="name">Nome *</Label>
               <Input
                 id="name"
@@ -136,11 +136,11 @@ export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReach
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" disabled={loading}>
               {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Criar lead'}
             </Button>
           </DialogFooter>

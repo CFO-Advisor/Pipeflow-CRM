@@ -56,19 +56,18 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="flex gap-3">
-        <div className="w-40">
-          <Select value={type} onValueChange={(v) => setType(v as ActivityType)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.entries(activityLabels) as [ActivityType, string][]).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div>
+        <Label className="mb-1.5 block">Tipo</Label>
+        <Select value={type} onValueChange={(v) => setType(v as ActivityType)}>
+          <SelectTrigger className="w-full sm:w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.entries(activityLabels) as [ActivityType, string][]).map(([value, label]) => (
+              <SelectItem key={value} value={value}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="space-y-1">
         <Label htmlFor="description">Descrição</Label>

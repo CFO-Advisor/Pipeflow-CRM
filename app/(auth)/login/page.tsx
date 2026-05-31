@@ -38,14 +38,14 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-background px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-bold">P</span>
             </div>
-            <span className="text-xl font-bold text-slate-900">PipeFlow</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-slate-100">PipeFlow</span>
           </div>
           <CardTitle className="text-2xl">Entrar</CardTitle>
           <CardDescription>Acesse sua conta para continuar</CardDescription>
@@ -91,7 +91,7 @@ function LoginForm() {
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
-            <p className="text-sm text-slate-600 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
               Não tem conta?{' '}
               <Link href="/register" className="text-blue-600 hover:underline font-medium">
                 Criar conta grátis

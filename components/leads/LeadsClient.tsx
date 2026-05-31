@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Building2, Mail, Phone, Trash2 } from 'lucide-react'
+import { Plus, Search, Building2, Mail, Phone, Trash2, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -83,9 +83,30 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
       <div className="space-y-2">
         {filtered.length === 0 ? (
           <Card className="p-12 text-center">
-            <p className="text-muted-foreground">
-              {search ? 'Nenhum lead encontrado.' : 'Adicione seu primeiro lead.'}
-            </p>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                <Users className="w-6 h-6 text-muted-foreground/50" />
+              </div>
+              <div>
+                <p className="font-medium text-foreground">
+                  {search ? 'Nenhum lead encontrado' : 'Nenhum lead ainda'}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {search
+                    ? 'Tente buscar por outro termo.'
+                    : 'Clique em "Novo lead" para adicionar seu primeiro contato.'}
+                </p>
+              </div>
+              {!search && (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="text-sm text-blue-600 hover:underline font-medium"
+                  disabled={planLimitReached}
+                >
+                  Adicionar lead
+                </button>
+              )}
+            </div>
           </Card>
         ) : (
           filtered.map((lead) => (

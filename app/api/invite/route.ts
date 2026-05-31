@@ -64,13 +64,18 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  const safeName = escapeHtml(workspace?.name ?? 'um workspace')
+
   await resend.emails.send({
     from: 'PipeFlow <noreply@pipeflow.app>',
     to: email,
-    subject: `Você foi convidado para ${workspace?.name ?? 'um workspace'} no PipeFlow`,
+    subject: `Você foi convidado para ${safeName} no PipeFlow`,
     html: `
       <h2>Você foi convidado!</h2>
-      <p>Você recebeu um convite para colaborar no workspace <strong>${workspace?.name}</strong> no PipeFlow CRM.</p>
+      <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
       <p>
         <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
           Aceitar convite

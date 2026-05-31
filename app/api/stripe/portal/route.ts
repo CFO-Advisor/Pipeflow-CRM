@@ -12,6 +12,16 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
 
+  // Verify user is a member of this workspace
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member) return NextResponse.json({ error: 'Não autorizado.' }, { status: 403 })
+
   const { data: workspace } = await supabase
     .from('workspaces')
     .select('stripe_customer_id')

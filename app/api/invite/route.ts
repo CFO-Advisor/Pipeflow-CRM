@@ -1,0 +1,84 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export async function POST(req: NextRequest) {
+  const { email, workspaceId } = await req.json()
+
+  if (!email || !workspaceId) {
+    return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 })
+  }
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
+  }
+
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (member?.role !== 'admin') {
+    return NextResponse.json({ error: 'Apenas admins podem convidar.' }, { status: 403 })
+  }
+
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('plan, name')
+    .eq('id', workspaceId)
+    .single()
+
+  if (workspace?.plan === 'free') {
+    const { count } = await supabase
+      .from('workspace_members')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+
+    if ((count ?? 0) >= 2) {
+      return NextResponse.json(
+        { error: 'Limite de 2 colaboradores do plano Free atingido.' },
+        { status: 403 }
+      )
+    }
+  }
+
+  const { error: insertError } = await supabase.from('workspace_members').insert({
+    workspace_id: workspaceId,
+    invited_email: email,
+    role: 'member',
+  })
+
+  if (insertError) {
+    return NextResponse.json({ error: insertError.message }, { status: 500 })
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+  await resend.emails.send({
+    from: 'PipeFlow <noreply@pipeflow.app>',
+    to: email,
+    subject: `Você foi convidado para ${workspace?.name ?? 'um workspace'} no PipeFlow`,
+    html: `
+      <h2>Você foi convidado!</h2>
+      <p>Você recebeu um convite para colaborar no workspace <strong>${workspace?.name}</strong> no PipeFlow CRM.</p>
+      <p>
+        <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
+          Aceitar convite
+        </a>
+      </p>
+      <p style="color:#94a3b8;font-size:12px">Se você não esperava este convite, pode ignorar este e-mail.</p>
+    `,
+  })
+
+  return NextResponse.json({ success: true })
+}

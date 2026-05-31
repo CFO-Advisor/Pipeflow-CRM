@@ -1,0 +1,87 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { UserPlus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+interface InviteFormProps {
+  workspaceId: string
+  disabled?: boolean
+}
+
+export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+
+    const res = await fetch('/api/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, workspaceId }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setMessage({ type: 'error', text: data.error ?? 'Erro ao enviar convite.' })
+    } else {
+      setMessage({ type: 'success', text: `Convite enviado para ${email}` })
+      setEmail('')
+      router.refresh()
+    }
+
+    setLoading(false)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      {message && (
+        <div
+          className={`text-sm rounded-md p-3 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-red-50 text-red-600 border border-red-200'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+      <div className="space-y-2">
+        <Label htmlFor="invite-email">E-mail do colaborador</Label>
+        <div className="flex gap-2">
+          <Input
+            id="invite-email"
+            type="email"
+            placeholder="colaborador@empresa.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={disabled}
+            required
+          />
+          <Button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+            disabled={loading || disabled}
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            {loading ? 'Enviando...' : 'Convidar'}
+          </Button>
+        </div>
+      </div>
+      {disabled && (
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+          Limite de 2 colaboradores do plano Free atingido. Faça upgrade para Pro para convidar mais.
+        </p>
+      )}
+    </form>
+  )
+}

@@ -1,0 +1,152 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Plus, Search, Building2, Mail, Phone, Trash2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { LeadForm } from './LeadForm'
+import type { Lead } from '@/types'
+
+interface LeadsClientProps {
+  leads: Lead[]
+  workspaceId: string
+  planLimitReached: boolean
+}
+
+export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached }: LeadsClientProps) {
+  const router = useRouter()
+  const [search, setSearch] = useState('')
+  const [showForm, setShowForm] = useState(false)
+
+  const filtered = initialLeads.filter(
+    (l) =>
+      l.name.toLowerCase().includes(search.toLowerCase()) ||
+      (l.company ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (l.email ?? '').toLowerCase().includes(search.toLowerCase())
+  )
+
+  async function handleDelete(id: string) {
+    if (!confirm('Excluir este lead?')) return
+    const supabase = createClient()
+    await supabase.from('leads').delete().eq('id', id)
+    router.refresh()
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            {initialLeads.length} lead{initialLeads.length !== 1 ? 's' : ''} no workspace
+          </p>
+        </div>
+        <Button
+          onClick={() => setShowForm(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+          disabled={planLimitReached}
+          title={planLimitReached ? 'Limite do plano Free atingido' : undefined}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Novo lead
+        </Button>
+      </div>
+
+      {planLimitReached && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+          <p className="text-sm text-amber-800">
+            Você atingiu o limite de 50 leads do plano Free.
+          </p>
+          <Link href="/settings/billing">
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
+              Fazer upgrade
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input
+          placeholder="Buscar por nome, empresa ou e-mail..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      <div className="space-y-2">
+        {filtered.length === 0 ? (
+          <Card className="p-12 text-center">
+            <p className="text-slate-500">
+              {search ? 'Nenhum lead encontrado.' : 'Adicione seu primeiro lead.'}
+            </p>
+          </Card>
+        ) : (
+          filtered.map((lead) => (
+            <Card key={lead.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between gap-4">
+                <Link href={`/leads/${lead.id}`} className="flex-1 min-w-0">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-blue-700 font-semibold text-sm">
+                        {lead.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-slate-900 hover:text-blue-600 transition-colors">
+                        {lead.name}
+                      </p>
+                      <div className="flex items-center flex-wrap gap-3 mt-1">
+                        {lead.company && (
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Building2 className="w-3 h-3" /> {lead.company}
+                          </span>
+                        )}
+                        {lead.email && (
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Mail className="w-3 h-3" /> {lead.email}
+                          </span>
+                        )}
+                        {lead.phone && (
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Phone className="w-3 h-3" /> {lead.phone}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Badge variant="outline" className="text-xs">
+                    {lead.status === 'active' ? 'Ativo' : 'Inativo'}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-8 h-8 text-slate-400 hover:text-red-600"
+                    onClick={() => handleDelete(lead.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+
+      <LeadForm
+        open={showForm}
+        onOpenChange={setShowForm}
+        workspaceId={workspaceId}
+        planLimitReached={planLimitReached}
+      />
+    </div>
+  )
+}

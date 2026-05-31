@@ -1,16 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const message = searchParams.get('message')
+  const authError = searchParams.get('error')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -49,9 +52,16 @@ export default function LoginPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && (
+            {message && (
+              <div className="text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-md p-3">
+                {message}
+              </div>
+            )}
+            {(error || authError) && (
               <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
-                {error}
+                {authError === 'auth_callback_failed'
+                  ? 'Link de confirmação inválido ou expirado. Tente criar a conta novamente.'
+                  : error}
               </div>
             )}
             <div className="space-y-2">
@@ -91,5 +101,13 @@ export default function LoginPage() {
         </form>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }

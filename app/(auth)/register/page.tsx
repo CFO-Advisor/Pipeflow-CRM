@@ -25,47 +25,22 @@ export default function RegisterPage() {
 
     const supabase = createClient()
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: name },
+        data: { full_name: name, workspace_name: workspaceName },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
 
-    if (signUpError || !data.user) {
-      setError(signUpError?.message ?? 'Erro ao criar conta.')
+    if (signUpError) {
+      setError(signUpError.message ?? 'Erro ao criar conta.')
       setLoading(false)
       return
     }
 
-    const slug = workspaceName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-
-    const { data: workspace, error: wsError } = await supabase
-      .from('workspaces')
-      .insert({ name: workspaceName, slug: `${slug}-${Date.now()}` })
-      .select()
-      .single()
-
-    if (wsError || !workspace) {
-      setError('Erro ao criar workspace.')
-      setLoading(false)
-      return
-    }
-
-    await supabase.from('workspace_members').insert({
-      workspace_id: workspace.id,
-      user_id: data.user.id,
-      role: 'admin',
-    })
-
-    router.push('/dashboard')
-    router.refresh()
+    router.push(`/login?message=Confirme+seu+e-mail+para+continuar`)
   }
 
   return (

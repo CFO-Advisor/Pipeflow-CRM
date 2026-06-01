@@ -68,21 +68,27 @@ export async function POST(req: NextRequest) {
 
   const safeName = escapeHtml(workspace?.name ?? 'um workspace')
 
-  await resend.emails.send({
-    from: 'PipeFlow <noreply@pipeflow.app>',
-    to: email,
-    subject: `Você foi convidado para ${safeName} no PipeFlow`,
-    html: `
-      <h2>Você foi convidado!</h2>
-      <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
-      <p>
-        <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
-          Aceitar convite
-        </a>
-      </p>
-      <p style="color:#94a3b8;font-size:12px">Se você não esperava este convite, pode ignorar este e-mail.</p>
-    `,
-  })
+  try {
+    await resend.emails.send({
+      from: 'PipeFlow <noreply@pipeflow.app>',
+      to: email,
+      subject: `Você foi convidado para ${safeName} no PipeFlow`,
+      html: `
+        <h2>Você foi convidado!</h2>
+        <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
+        <p>
+          <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
+            Aceitar convite
+          </a>
+        </p>
+        <p style="color:#94a3b8;font-size:12px">Se você não esperava este convite, pode ignorar este e-mail.</p>
+      `,
+    })
+  } catch (err) {
+    console.error('[invite] Resend error', err)
+    // O convite já foi salvo no DB; retorna sucesso com aviso
+    return NextResponse.json({ success: true, warning: 'Convite salvo, mas e-mail não enviado.' })
+  }
 
   return NextResponse.json({ success: true })
 }

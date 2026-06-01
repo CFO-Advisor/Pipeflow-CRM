@@ -48,7 +48,7 @@ export function DealCard({ deal }: DealCardProps) {
             )}
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               {deal.value > 0 && (
-                <span className="flex items-center gap-1 text-xs font-medium text-green-700">
+                <span className="flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
                   <DollarSign className="w-3 h-3" />
                   {formatCurrency(deal.value)}
                 </span>
@@ -56,7 +56,7 @@ export function DealCard({ deal }: DealCardProps) {
               {deal.deadline && (
                 <span
                   className={`flex items-center gap-1 text-xs ${
-                    isOverdue ? 'text-red-600 font-medium' : 'text-muted-foreground'
+                    isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-muted-foreground'
                   }`}
                 >
                   <Calendar className="w-3 h-3" />

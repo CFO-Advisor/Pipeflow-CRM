@@ -78,29 +78,29 @@ export default async function DashboardPage() {
           label="Total de Leads"
           value={leads?.length ?? 0}
           icon={Users}
-          iconColor="text-blue-600"
-          iconBg="bg-blue-100"
+          iconColor="text-blue-600 dark:text-blue-400"
+          iconBg="bg-blue-100 dark:bg-blue-900/30"
         />
         <MetricCard
           label="Negócios Abertos"
           value={openDeals.length}
           icon={Briefcase}
-          iconColor="text-purple-600"
-          iconBg="bg-purple-100"
+          iconColor="text-purple-600 dark:text-purple-400"
+          iconBg="bg-purple-100 dark:bg-purple-900/30"
         />
         <MetricCard
           label="Valor do Pipeline"
           value={formatCurrency(pipelineValue)}
           icon={DollarSign}
-          iconColor="text-green-600"
-          iconBg="bg-green-100"
+          iconColor="text-green-600 dark:text-green-400"
+          iconBg="bg-green-100 dark:bg-green-900/30"
         />
         <MetricCard
           label="Taxa de Conversão"
           value={`${conversionRate}%`}
           icon={TrendingUp}
-          iconColor="text-orange-600"
-          iconBg="bg-orange-100"
+          iconColor="text-orange-600 dark:text-orange-400"
+          iconBg="bg-orange-100 dark:bg-orange-900/30"
           description={`${closedWon.length} ganhos de ${allDeals.length} negócios`}
         />
       </div>

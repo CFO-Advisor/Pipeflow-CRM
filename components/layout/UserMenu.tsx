@@ -35,22 +35,22 @@ export function UserMenu({ email, name }: UserMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors text-left">
+      <DropdownMenuTrigger className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
         <Avatar className="w-8 h-8">
-          <AvatarFallback className="bg-blue-600 text-white text-xs">
+          <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs">
             {initials}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-100 truncate">{name ?? email}</p>
-          {name && <p className="text-xs text-slate-400 truncate">{email}</p>}
+          <p className="text-sm font-medium text-sidebar-foreground truncate">{name ?? email}</p>
+          {name && <p className="text-xs text-muted-foreground truncate">{email}</p>}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" side="top">
         <DropdownMenuLabel>
           <div>
             <p className="font-medium">{name ?? email}</p>
-            {name && <p className="text-xs text-slate-500 font-normal">{email}</p>}
+            {name && <p className="text-xs text-muted-foreground font-normal">{email}</p>}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

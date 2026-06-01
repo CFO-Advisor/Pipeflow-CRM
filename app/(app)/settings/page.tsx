@@ -58,7 +58,7 @@ export default async function SettingsPage() {
               <p className="font-medium text-foreground">{workspace.name}</p>
               <p className="text-xs text-muted-foreground">{workspace.slug}</p>
             </div>
-            <Badge className={workspace.plan === 'pro' ? 'bg-blue-600' : 'bg-slate-500'}>
+            <Badge variant={workspace.plan === 'pro' ? 'default' : 'secondary'}>
               {workspace.plan === 'pro' ? 'Pro' : 'Free'}
             </Badge>
           </div>

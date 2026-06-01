@@ -27,8 +27,8 @@ export function Sidebar() {
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
               isActive
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
             )}
           >
             <Icon className="w-4 h-4" />

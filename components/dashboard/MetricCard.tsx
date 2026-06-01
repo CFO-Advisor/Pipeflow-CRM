@@ -29,7 +29,7 @@ export function MetricCard({
               <p className="text-xs text-muted-foreground mt-1.5">{description}</p>
             )}
           </div>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} dark:bg-opacity-20`}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
             <Icon className={`w-5 h-5 ${iconColor}`} />
           </div>
         </div>

@@ -24,12 +24,12 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-slate-100 hover:bg-slate-800 transition-colors">
+      <DropdownMenuTrigger className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
         <div className="flex items-center gap-2 truncate">
-          <Building2 className="w-4 h-4 flex-shrink-0 text-slate-400" />
+          <Building2 className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
           <span className="truncate text-sm">{currentWorkspace.name}</span>
         </div>
-        <ChevronsUpDown className="w-4 h-4 flex-shrink-0 text-slate-400" />
+        <ChevronsUpDown className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 ml-2" align="start">
         <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
@@ -44,17 +44,17 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
             }}
             className="cursor-pointer"
           >
-            <Building2 className="w-4 h-4 mr-2 text-slate-400" />
+            <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
             <span className="truncate">{ws.name}</span>
             {ws.id === currentWorkspace.id && (
-              <span className="ml-auto text-xs text-blue-600 font-medium">Ativo</span>
+              <span className="ml-auto text-xs text-primary font-medium">Ativo</span>
             )}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => router.push('/register')}
-          className="cursor-pointer text-blue-600"
+          className="cursor-pointer text-primary"
         >
           <Plus className="w-4 h-4 mr-2" />
           Novo workspace

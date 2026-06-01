@@ -48,8 +48,8 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
         <div
           className={`text-sm rounded-md p-3 ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-600 border border-red-200'
+              ? 'bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20'
+              : 'bg-destructive/10 text-destructive border border-destructive/20'
           }`}
         >
           {message.text}

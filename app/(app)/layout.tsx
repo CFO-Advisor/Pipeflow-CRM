@@ -46,11 +46,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar — hidden below lg */}
-      <aside className="hidden lg:flex w-64 bg-slate-900 text-slate-100 flex-col min-h-screen fixed left-0 top-0 z-40">
-        <div className="p-4 border-b border-slate-800">
+      <aside className="hidden lg:flex w-64 bg-sidebar text-sidebar-foreground flex-col min-h-screen fixed left-0 top-0 z-40">
+        <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-sm font-bold">P</span>
+            <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-sidebar-primary-foreground text-sm font-bold">P</span>
             </div>
             <span className="text-xl font-bold">PipeFlow</span>
           </div>
@@ -64,7 +64,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Sidebar />
         </div>
 
-        <div className="p-4 border-t border-slate-800 flex items-center gap-2">
+        <div className="p-4 border-t border-sidebar-border flex items-center gap-2">
           <div className="flex-1 min-w-0">
             <UserMenu email={userEmail} name={userName} />
           </div>
@@ -81,7 +81,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
 
       {/* Main content: full-width on mobile, offset on desktop */}
-      <main className="flex-1 lg:ml-64 min-w-0 px-4 py-6 pt-20 lg:pt-0 lg:p-8">
+      <main className="flex-1 lg:ml-64 min-w-0 px-4 py-6 pt-16 lg:pt-0 lg:p-8">
         {children}
       </main>
     </div>

@@ -71,7 +71,7 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
       )}
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           placeholder="Buscar por nome, empresa ou e-mail..."
           value={search}
@@ -114,8 +114,8 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
               <div className="flex items-start justify-between gap-4">
                 <Link href={`/leads/${lead.id}`} className="flex-1 min-w-0">
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-blue-700 font-semibold text-sm">
+                    <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-primary font-semibold text-sm">
                         {lead.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -150,7 +150,7 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-8 h-8 text-slate-400 hover:text-red-600"
+                    className="w-8 h-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                     onClick={() => handleDelete(lead.id)}
                   >
                     <Trash2 className="w-4 h-4" />

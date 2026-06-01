@@ -1,5 +1,8 @@
-export type Plan = 'free' | 'pro'
+export type Plan = 'free' | 'pro' | 'max'
 export type UserRole = 'admin' | 'member'
+export type SalesRole = 'master' | 'director' | 'manager' | 'seller'
+export type DataScope = 'all' | 'team' | 'own'
+export type PermissionResource = 'leads' | 'deals' | 'activities' | 'reports'
 export type DealStage =
   | 'new_lead'
   | 'contacted'
@@ -19,18 +22,47 @@ export interface Workspace {
   created_at: string
 }
 
+export interface Company {
+  id: string
+  workspace_id: string
+  name: string
+  cnpj: string | null
+  active: boolean
+  created_at: string
+}
+
 export interface WorkspaceMember {
   id: string
   workspace_id: string
   user_id: string | null
   role: UserRole
+  sales_role: SalesRole
+  manager_id: string | null
   invited_email: string | null
   joined_at: string
+}
+
+export interface UserPermission {
+  id: string
+  member_id: string
+  resource: PermissionResource
+  can_view: boolean
+  can_create: boolean
+  can_edit: boolean
+  can_delete: boolean
+  data_scope: DataScope
+}
+
+export interface UserCompanyAccess {
+  id: string
+  member_id: string
+  company_id: string
 }
 
 export interface Lead {
   id: string
   workspace_id: string
+  company_id: string | null
   name: string
   email: string | null
   phone: string | null
@@ -45,6 +77,7 @@ export interface Lead {
 export interface Deal {
   id: string
   workspace_id: string
+  company_id: string | null
   lead_id: string
   title: string
   value: number
@@ -59,6 +92,7 @@ export interface Deal {
 export interface Activity {
   id: string
   workspace_id: string
+  company_id: string | null
   lead_id: string
   author_id: string | null
   type: ActivityType
@@ -72,6 +106,8 @@ export interface WorkspaceMemberWithUser extends WorkspaceMember {
     email: string
     user_metadata: { full_name?: string }
   } | null
+  permissions?: UserPermission[]
+  company_access?: UserCompanyAccess[]
 }
 
 export interface DealWithLead extends Deal {
@@ -84,4 +120,26 @@ export interface ActivityWithAuthor extends Activity {
     email: string
     user_metadata: { full_name?: string }
   } | null
+}
+
+// Permissões padrão por papel (usadas quando não há registro explícito)
+export const DEFAULT_PERMISSIONS: Record<SalesRole, Omit<UserPermission, 'id' | 'member_id' | 'resource'>> = {
+  master:   { can_view: true,  can_create: true,  can_edit: true,  can_delete: true,  data_scope: 'all'  },
+  director: { can_view: true,  can_create: true,  can_edit: true,  can_delete: false, data_scope: 'all'  },
+  manager:  { can_view: true,  can_create: true,  can_edit: true,  can_delete: false, data_scope: 'team' },
+  seller:   { can_view: true,  can_create: true,  can_edit: true,  can_delete: false, data_scope: 'own'  },
+}
+
+export const SALES_ROLE_LABELS: Record<SalesRole, string> = {
+  master:   'Master',
+  director: 'Diretor',
+  manager:  'Gerente',
+  seller:   'Vendedor',
+}
+
+export const PERMISSION_RESOURCE_LABELS: Record<PermissionResource, string> = {
+  leads:      'Leads',
+  deals:      'Negócios',
+  activities: 'Atividades',
+  reports:    'Relatórios',
 }

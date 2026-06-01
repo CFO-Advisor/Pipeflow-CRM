@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     .eq('id', workspaceId)
     .single()
 
+  // Limite de 2 colaboradores apenas no plano Free
   if (workspace?.plan === 'free') {
     const { count } = await supabase
       .from('workspace_members')
@@ -86,7 +87,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     console.error('[invite] Resend error', err)
-    // O convite já foi salvo no DB; retorna sucesso com aviso
     return NextResponse.json({ success: true, warning: 'Convite salvo, mas e-mail não enviado.' })
   }
 

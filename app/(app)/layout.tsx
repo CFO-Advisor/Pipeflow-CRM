@@ -4,10 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { WorkspaceSwitcher } from '@/components/layout/WorkspaceSwitcher'
+import { CompanySwitcher } from '@/components/layout/CompanySwitcher'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { MobileSidebar } from '@/components/layout/MobileSidebar'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import type { Workspace } from '@/types'
+import type { Workspace, Company } from '@/types'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -40,12 +41,32 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(`/api/workspace/activate?id=${currentWorkspace.id}&next=/dashboard`)
   }
 
+  // Para o plano MAX: carregar empresas acessíveis pelo usuário
+  let companies: Company[] = []
+  let currentCompanyId: string | null = null
+
+  if (currentWorkspace.plan === 'max') {
+    const { data: companiesData } = await service
+      .from('companies')
+      .select('*')
+      .eq('workspace_id', currentWorkspace.id)
+      .order('name')
+
+    companies = (companiesData ?? []) as Company[]
+    currentCompanyId = cookieStore.get('current_company_id')?.value ?? null
+
+    // Validar que o cookie ainda aponta para uma empresa válida
+    if (currentCompanyId && !companies.find((c) => c.id === currentCompanyId)) {
+      currentCompanyId = null
+    }
+  }
+
   const userEmail = user.email ?? ''
   const userName = user.user_metadata?.full_name as string | undefined
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop sidebar — hidden below lg */}
+      {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 bg-sidebar text-sidebar-foreground flex-col min-h-screen fixed left-0 top-0 z-40">
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 mb-4">
@@ -59,6 +80,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             workspaces={workspaces}
             currentWorkspace={currentWorkspace}
           />
+          {currentWorkspace.plan === 'max' && companies.length > 0 && (
+            <div className="mt-1">
+              <CompanySwitcher
+                companies={companies}
+                currentCompanyId={currentCompanyId}
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex-1 p-4">
@@ -78,7 +107,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         userName={userName}
       />
 
-      {/* Main content: full-width on mobile, offset on desktop */}
       <main className="flex-1 lg:ml-64 min-w-0 px-4 py-6 pt-16 lg:pt-0 lg:p-8">
         {children}
       </main>

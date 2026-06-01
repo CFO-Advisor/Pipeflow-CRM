@@ -3,7 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
-  const { workspaceId } = await req.json()
+  const { workspaceId, targetPlan = 'pro' } = await req.json()
+
+  if (!['pro', 'max'].includes(targetPlan)) {
+    return NextResponse.json({ error: 'Plano inválido.' }, { status: 400 })
+  }
 
   const supabase = await createClient()
   const {
@@ -12,7 +16,6 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
 
-  // Verify user is a member of this workspace
   const { data: member } = await supabase
     .from('workspace_members')
     .select('role')
@@ -48,19 +51,27 @@ export async function POST(req: NextRequest) {
       if (updateErr) console.error('[stripe/checkout] DB update customer id', updateErr)
     }
 
+    const priceId =
+      targetPlan === 'max'
+        ? process.env.STRIPE_PRICE_ID_MAX
+        : process.env.STRIPE_PRICE_ID_PRO
+
+    if (!priceId) {
+      console.error(`[stripe/checkout] STRIPE_PRICE_ID_${targetPlan.toUpperCase()} não configurado`)
+      return NextResponse.json(
+        { error: `Plano ${targetPlan.toUpperCase()} não configurado. Contate o suporte.` },
+        { status: 500 },
+      )
+    }
+
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: process.env.STRIPE_PRICE_ID_PRO!,
-          quantity: 1,
-        },
-      ],
-      metadata: { workspace_id: workspaceId },
+      line_items: [{ price: priceId, quantity: 1 }],
+      metadata: { workspace_id: workspaceId, plan_type: targetPlan },
       success_url: `${appUrl}/settings/billing?success=true`,
       cancel_url: `${appUrl}/settings/billing`,
     })

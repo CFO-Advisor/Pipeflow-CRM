@@ -28,9 +28,15 @@ export async function createWorkspaceAction(workspaceName: string) {
     return { error: wsError?.message ?? 'Falha ao inserir workspace' }
   }
 
+  // Fundador do workspace recebe papel 'admin' + sales_role 'master'
   const { error: memberError } = await service
     .from('workspace_members')
-    .insert({ workspace_id: workspace.id, user_id: user.id, role: 'admin' })
+    .insert({
+      workspace_id: workspace.id,
+      user_id: user.id,
+      role: 'admin',
+      sales_role: 'master',
+    })
 
   if (memberError) {
     await service.from('workspaces').delete().eq('id', workspace.id)

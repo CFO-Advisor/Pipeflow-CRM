@@ -16,18 +16,36 @@ export default async function PipelinePage() {
   const workspaceId = cookieStore.get('current_workspace_id')?.value
   if (!workspaceId) redirect('/dashboard')
 
-  const [{ data: deals }, { data: leads }] = await Promise.all([
-    supabase
-      .from('deals')
-      .select('*, lead:leads(id, name, company)')
-      .eq('workspace_id', workspaceId)
-      .order('position', { ascending: true }),
-    supabase
-      .from('leads')
-      .select('id, name')
-      .eq('workspace_id', workspaceId)
-      .order('name'),
-  ])
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('plan')
+    .eq('id', workspaceId)
+    .single()
+
+  // Filtro de empresa para plano MAX (RLS já garante segurança; cookie é apenas UX)
+  const companyId =
+    workspace?.plan === 'max'
+      ? (cookieStore.get('current_company_id')?.value ?? null)
+      : null
+
+  let dealsQuery = supabase
+    .from('deals')
+    .select('*, lead:leads(id, name, company)')
+    .eq('workspace_id', workspaceId)
+    .order('position', { ascending: true })
+
+  let leadsQuery = supabase
+    .from('leads')
+    .select('id, name')
+    .eq('workspace_id', workspaceId)
+    .order('name')
+
+  if (companyId) {
+    dealsQuery = dealsQuery.eq('company_id', companyId)
+    leadsQuery = leadsQuery.eq('company_id', companyId)
+  }
+
+  const [{ data: deals }, { data: leads }] = await Promise.all([dealsQuery, leadsQuery])
 
   return (
     <div className="space-y-6">
@@ -38,7 +56,6 @@ export default async function PipelinePage() {
         </p>
       </div>
 
-      {/* Negative margin lets the board break out of page padding on small screens */}
       <div className="-mx-4 lg:mx-0 px-4 lg:px-0">
         <KanbanBoard
           deals={(deals ?? []) as DealWithLead[]}

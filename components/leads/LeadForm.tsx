@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import type { Lead } from '@/types'
+import type { Company, Lead } from '@/types'
 
 interface LeadFormProps {
   open: boolean
@@ -22,9 +22,19 @@ interface LeadFormProps {
   workspaceId: string
   lead?: Lead
   planLimitReached?: boolean
+  companies?: Company[]
+  currentCompanyId?: string | null
 }
 
-export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReached }: LeadFormProps) {
+export function LeadForm({
+  open,
+  onOpenChange,
+  workspaceId,
+  lead,
+  planLimitReached,
+  companies = [],
+  currentCompanyId = null,
+}: LeadFormProps) {
   const router = useRouter()
   const isEdit = !!lead
 
@@ -35,6 +45,9 @@ export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReach
     company: lead?.company ?? '',
     position: lead?.position ?? '',
   })
+  const [companyId, setCompanyId] = useState<string | null>(
+    lead?.company_id ?? currentCompanyId ?? null
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -54,16 +67,21 @@ export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReach
     setError('')
     const supabase = createClient()
 
+    const payload = {
+      ...form,
+      company_id: companyId ?? null,
+    }
+
     if (isEdit) {
       const { error: err } = await supabase
         .from('leads')
-        .update({ ...form, updated_at: new Date().toISOString() })
+        .update({ ...payload, updated_at: new Date().toISOString() })
         .eq('id', lead.id)
       if (err) { setError(err.message); setLoading(false); return }
     } else {
       const { error: err } = await supabase
         .from('leads')
-        .insert({ ...form, workspace_id: workspaceId })
+        .insert({ ...payload, workspace_id: workspaceId })
       if (err) { setError(err.message); setLoading(false); return }
     }
 
@@ -87,6 +105,27 @@ export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReach
               {error}
             </div>
           )}
+
+          {/* Empresa do grupo — somente plano MAX */}
+          {companies.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="company_group">Empresa do grupo</Label>
+              <select
+                id="company_group"
+                value={companyId ?? ''}
+                onChange={(e) => setCompanyId(e.target.value || null)}
+                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+              >
+                <option value="">Sem empresa vinculada</option>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2 space-y-2">
               <Label htmlFor="name">Nome *</Label>
@@ -118,12 +157,12 @@ export function LeadForm({ open, onOpenChange, workspaceId, lead, planLimitReach
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company">Empresa</Label>
+              <Label htmlFor="company">Empresa do contato</Label>
               <Input
                 id="company"
                 value={form.company}
                 onChange={(e) => update('company', e.target.value)}
-                placeholder="Nome da empresa"
+                placeholder="Nome da empresa do contato"
               />
             </div>
             <div className="space-y-2">

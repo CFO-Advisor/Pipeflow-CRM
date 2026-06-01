@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -34,6 +34,11 @@ interface KanbanBoardProps {
 export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanBoardProps) {
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
+
+  // Sincroniza o estado local quando o servidor retorna dados novos (ex: após criar negócio)
+  useEffect(() => {
+    if (activeId === null) setDeals(initialDeals)
+  }, [initialDeals, activeId])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronsUpDown, Building2, Plus } from 'lucide-react'
+import { ChevronsUpDown, Building2, Check, Plus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,25 +35,31 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
         <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
           Workspaces
         </DropdownMenuLabel>
-        {workspaces.map((ws) => (
-          <DropdownMenuItem
-            key={ws.id}
-            onClick={() => {
-              router.push(`/api/workspace/activate?id=${ws.id}&next=/dashboard`)
-              setOpen(false)
-            }}
-            className="cursor-pointer"
-          >
-            <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span className="truncate">{ws.name}</span>
-            {ws.id === currentWorkspace.id && (
-              <span className="ml-auto text-xs text-primary font-medium">Ativo</span>
-            )}
-          </DropdownMenuItem>
-        ))}
+        {workspaces.map((ws) => {
+          const isActive = ws.id === currentWorkspace.id
+          return (
+            <DropdownMenuItem
+              key={ws.id}
+              onClick={() => {
+                setOpen(false)
+                if (!isActive) {
+                  // router.push não suporta rotas de API com redirect — usa navegação do browser
+                  window.location.href = `/api/workspace/activate?id=${ws.id}&next=/dashboard`
+                }
+              }}
+              className="cursor-pointer"
+            >
+              <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="truncate">{ws.name}</span>
+              {isActive && (
+                <Check className="w-3.5 h-3.5 ml-auto text-primary" />
+              )}
+            </DropdownMenuItem>
+          )
+        })}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => router.push('/register')}
+          onClick={() => { setOpen(false); router.push('/register') }}
           className="cursor-pointer text-primary"
         >
           <Plus className="w-4 h-4 mr-2" />

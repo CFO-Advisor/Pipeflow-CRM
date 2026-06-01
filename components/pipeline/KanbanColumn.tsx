@@ -31,11 +31,11 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
   const { setNodeRef, isOver } = useDroppable({ id: stage })
 
   return (
-    <div className="w-[17rem] sm:w-72">
-      <div className={`rounded-t-lg ${config.headerColor} px-3 py-2 flex items-center justify-between`}>
+    <div className="w-[17rem] sm:w-72 rounded-xl shadow-sm overflow-hidden">
+      <div className={`${config.headerColor} px-3 py-2.5 flex items-center justify-between`}>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-white">{config.label}</span>
-          <span className="bg-white/20 text-white text-xs rounded-full px-1.5 py-0.5">
+          <span className="text-sm font-semibold text-white tracking-tight">{config.label}</span>
+          <span className="bg-white/25 text-white text-xs font-medium rounded-full px-2 py-0.5 tabular-nums">
             {deals.length}
           </span>
         </div>
@@ -52,7 +52,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
       <SortableContext items={deals.map((d) => d.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
-          className={`min-h-[300px] lg:min-h-[400px] rounded-b-lg p-2 space-y-2 transition-colors ${
+          className={`min-h-[300px] lg:min-h-[400px] p-2 space-y-2 transition-colors duration-150 ${
             isOver ? 'bg-blue-100 dark:bg-blue-900/30' : config.bgColor
           }`}
         >

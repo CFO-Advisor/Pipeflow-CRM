@@ -40,7 +40,7 @@ export default async function BillingPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">Plano e cobrança</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Plano e cobrança</h1>
       </div>
 
       <Card>

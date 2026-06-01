@@ -52,7 +52,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-sidebar-primary-foreground text-sm font-bold">P</span>
             </div>
-            <span className="text-xl font-bold">PipeFlow</span>
+            <span className="text-xl font-bold flex-1">PipeFlow</span>
+            <ThemeToggle />
           </div>
           <WorkspaceSwitcher
             workspaces={workspaces}
@@ -64,11 +65,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Sidebar />
         </div>
 
-        <div className="p-4 border-t border-sidebar-border flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <UserMenu email={userEmail} name={userName} />
-          </div>
-          <ThemeToggle />
+        <div className="p-4 border-t border-sidebar-border">
+          <UserMenu email={userEmail} name={userName} />
         </div>
       </aside>
 

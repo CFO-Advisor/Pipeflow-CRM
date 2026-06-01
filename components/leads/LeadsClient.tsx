@@ -41,7 +41,7 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">Leads</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Leads</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {initialLeads.length} lead{initialLeads.length !== 1 ? 's' : ''} no workspace
           </p>

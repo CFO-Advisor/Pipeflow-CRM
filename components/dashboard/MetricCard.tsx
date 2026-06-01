@@ -19,12 +19,12 @@ export function MetricCard({
   description,
 }: MetricCardProps) {
   return (
-    <Card className="transition-shadow hover:shadow-md">
-      <CardContent className="p-5">
+    <Card className="transition-shadow duration-200 hover:shadow-md border-border/60">
+      <CardContent className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold text-foreground mt-1.5 break-words leading-none">{value}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+            <p className="text-2xl font-bold text-foreground mt-2 break-words leading-none tracking-tight">{value}</p>
             {description && (
               <p className="text-xs text-muted-foreground mt-1.5">{description}</p>
             )}

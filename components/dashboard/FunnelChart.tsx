@@ -37,9 +37,9 @@ export function FunnelChart({ data }: FunnelChartProps) {
   const tooltipText = isDark ? '#f1f5f9' : '#1e293b'
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
         <XAxis
           dataKey="label"
           tick={{ fontSize: 11, fill: tickColor }}
@@ -55,15 +55,16 @@ export function FunnelChart({ data }: FunnelChartProps) {
         <Tooltip
           contentStyle={{
             fontSize: 12,
-            borderRadius: 8,
+            borderRadius: 10,
             border: `1px solid ${tooltipBorder}`,
             backgroundColor: tooltipBg,
             color: tooltipText,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
           }}
           formatter={(value) => [value, 'Negócios']}
-          cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }}
+          cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}
         />
-        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="count" radius={[6, 6, 0, 0]} isAnimationActive animationDuration={600} animationEasing="ease-out">
           {data.map((entry) => (
             <Cell key={entry.stage} fill={stageColors[entry.stage]} />
           ))}

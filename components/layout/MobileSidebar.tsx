@@ -66,13 +66,12 @@ export function MobileSidebar({
         }`}
       >
         <div className="p-4 border-b border-sidebar-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-sidebar-primary-foreground text-sm font-bold">P</span>
-              </div>
-              <span className="text-xl font-bold">PipeFlow</span>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-sidebar-primary-foreground text-sm font-bold">P</span>
             </div>
+            <span className="text-xl font-bold flex-1">PipeFlow</span>
+            <ThemeToggle />
             <button
               onClick={() => setOpen(false)}
               className="text-muted-foreground hover:text-sidebar-foreground transition-colors p-1 rounded"
@@ -91,11 +90,8 @@ export function MobileSidebar({
           <Sidebar />
         </div>
 
-        <div className="p-4 border-t border-sidebar-border flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <UserMenu email={userEmail} name={userName} />
-          </div>
-          <ThemeToggle />
+        <div className="p-4 border-t border-sidebar-border">
+          <UserMenu email={userEmail} name={userName} />
         </div>
       </aside>
     </>

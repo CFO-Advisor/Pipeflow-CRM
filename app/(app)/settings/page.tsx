@@ -43,7 +43,7 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-2xl w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Configurações</h1>
         <p className="text-muted-foreground text-sm mt-1">Gerencie seu workspace e equipe</p>
       </div>
 

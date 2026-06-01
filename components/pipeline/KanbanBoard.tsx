@@ -5,6 +5,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -74,8 +75,19 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
     {} as Record<DealStage, DealWithLead[]>
   )
 
+  const dropAnimation = {
+    duration: 180,
+    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+  }
+
   return (
-    <DndContext id="kanban-dnd" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext
+      id="kanban-dnd"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <div className="flex gap-3 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory lg:snap-none [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.300)_transparent] dark:[scrollbar-color:theme(colors.slate.700)_transparent]">
         {STAGES.map((stage) => (
           <div key={stage} className="snap-start snap-always flex-shrink-0">
@@ -89,7 +101,7 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
         ))}
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={dropAnimation}>
         {activeDeal && <DealCard deal={activeDeal} />}
       </DragOverlay>
     </DndContext>

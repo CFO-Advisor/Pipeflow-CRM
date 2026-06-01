@@ -55,7 +55,7 @@ export default async function LeadDetailPage({ params }: Props) {
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-foreground flex-1 min-w-0 truncate">{lead.name}</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">{lead.name}</h1>
         <Badge variant="outline">{lead.status === 'active' ? 'Ativo' : 'Inativo'}</Badge>
       </div>
 

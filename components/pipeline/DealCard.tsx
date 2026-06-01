@@ -19,7 +19,7 @@ export function DealCard({ deal }: DealCardProps) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? undefined : transition ?? 'transform 150ms ease',
     opacity: isDragging ? 0.4 : 1,
   }
 

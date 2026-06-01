@@ -22,7 +22,7 @@ export function UpcomingDeals({ deals }: UpcomingDealsProps) {
       {deals.map((deal) => {
         const isOverdue = deal.deadline && new Date(deal.deadline) < new Date()
         return (
-          <div key={deal.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors group">
+          <div key={deal.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors duration-200 group">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-foreground truncate">{deal.title}</p>
               {deal.lead && (

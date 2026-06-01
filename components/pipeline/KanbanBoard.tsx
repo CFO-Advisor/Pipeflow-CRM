@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +11,6 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { arrayMove } from '@dnd-kit/sortable'
 import { KanbanColumn } from './KanbanColumn'
 import { DealCard } from './DealCard'
 import { updateDealStage } from '@/app/actions/deals'
@@ -35,7 +34,6 @@ interface KanbanBoardProps {
 export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanBoardProps) {
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [, startTransition] = useTransition()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -58,11 +56,9 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
 
     if (draggedDeal.stage === overStage && active.id === over.id) return
 
-    startTransition(() => {
-      setDeals((prev) =>
-        prev.map((d) => (d.id === active.id ? { ...d, stage: overStage } : d))
-      )
-    })
+    setDeals((prev) =>
+      prev.map((d) => (d.id === active.id ? { ...d, stage: overStage } : d))
+    )
 
     updateDealStage(draggedDeal.id, overStage)
   }
@@ -74,11 +70,6 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
     },
     {} as Record<DealStage, DealWithLead[]>
   )
-
-  const dropAnimation = {
-    duration: 180,
-    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-  }
 
   return (
     <DndContext
@@ -101,7 +92,7 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
         ))}
       </div>
 
-      <DragOverlay dropAnimation={dropAnimation}>
+      <DragOverlay dropAnimation={null}>
         {activeDeal && <DealCard deal={activeDeal} />}
       </DragOverlay>
     </DndContext>

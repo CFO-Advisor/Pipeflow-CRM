@@ -22,6 +22,16 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
+  // Apenas um workspace — exibe o nome sem dropdown
+  if (workspaces.length <= 1) {
+    return (
+      <div className="flex w-full items-center gap-2 px-3 py-2 text-sidebar-foreground">
+        <Building2 className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+        <span className="truncate text-sm">{currentWorkspace.name}</span>
+      </div>
+    )
+  }
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
@@ -43,7 +53,6 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
               onClick={() => {
                 setOpen(false)
                 if (!isActive) {
-                  // router.push não suporta rotas de API com redirect — usa navegação do browser
                   window.location.href = `/api/workspace/activate?id=${ws.id}&next=/dashboard`
                 }
               }}
@@ -51,9 +60,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
             >
               <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
               <span className="truncate">{ws.name}</span>
-              {isActive && (
-                <Check className="w-3.5 h-3.5 ml-auto text-primary" />
-              )}
+              {isActive && <Check className="w-3.5 h-3.5 ml-auto text-primary" />}
             </DropdownMenuItem>
           )
         })}

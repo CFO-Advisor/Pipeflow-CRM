@@ -42,17 +42,14 @@ export function MemberList({ members, currentUserId, isAdmin }: MemberListProps)
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge
-              variant={member.role === 'admin' ? 'default' : 'outline'}
-              className={member.role === 'admin' ? 'bg-blue-600' : ''}
-            >
+            <Badge variant={member.role === 'admin' ? 'default' : 'outline'}>
               {member.role === 'admin' ? 'Admin' : 'Membro'}
             </Badge>
             {isAdmin && member.user_id !== currentUserId && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8 text-slate-400 hover:text-red-600"
+                className="w-8 h-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                 onClick={() => handleRemove(member.id)}
               >
                 <Trash2 className="w-4 h-4" />

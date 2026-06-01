@@ -26,7 +26,7 @@ export function UpcomingDeals({ deals }: UpcomingDealsProps) {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-foreground truncate">{deal.title}</p>
               {deal.lead && (
-                <Link href={`/leads/${deal.lead.id}`} className="text-xs text-muted-foreground hover:text-blue-600 transition-colors truncate block">
+                <Link href={`/leads/${deal.lead.id}`} className="text-xs text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate block">
                   {deal.lead.name}
                   {deal.lead.company && <span className="text-muted-foreground/60"> · {deal.lead.company}</span>}
                 </Link>

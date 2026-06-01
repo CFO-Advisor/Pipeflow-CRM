@@ -78,14 +78,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-background px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-bold">P</span>
             </div>
-            <span className="text-xl font-bold text-slate-900 dark:text-slate-100">PipeFlow</span>
+            <span className="text-xl font-bold text-foreground">PipeFlow</span>
           </div>
           <CardTitle className="text-2xl">
             {existingUser ? 'Criar workspace' : 'Criar conta grátis'}
@@ -97,7 +97,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+              <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
                 {error}
               </div>
             )}
@@ -160,7 +160,7 @@ export default function RegisterPage() {
                 : existingUser ? 'Criar workspace' : 'Criar conta grátis'}
             </Button>
             {!existingUser && (
-              <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
+              <p className="text-sm text-muted-foreground text-center">
                 Já tem conta?{' '}
                 <Link href="/login" className="text-blue-600 hover:underline font-medium">
                   Entrar

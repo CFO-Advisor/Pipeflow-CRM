@@ -33,21 +33,29 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
   const [type, setType] = useState<ActivityType>('note')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!description.trim()) return
 
     setLoading(true)
+    setError('')
     const supabase = createClient()
 
-    await supabase.from('activities').insert({
+    const { error: err } = await supabase.from('activities').insert({
       lead_id: leadId,
       workspace_id: workspaceId,
       author_id: userId,
       type,
       description: description.trim(),
     })
+
+    if (err) {
+      setError('Falha ao registrar atividade. Tente novamente.')
+      setLoading(false)
+      return
+    }
 
     setDescription('')
     router.refresh()
@@ -56,6 +64,11 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      {error && (
+        <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+          {error}
+        </div>
+      )}
       <div>
         <Label className="mb-1.5 block">Tipo</Label>
         <Select value={type} onValueChange={(v) => setType(v as ActivityType)}>

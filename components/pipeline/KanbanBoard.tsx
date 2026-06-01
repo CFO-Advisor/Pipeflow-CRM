@@ -51,7 +51,7 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
     setActiveId(active.id as string)
   }
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
+  async function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveId(null)
     if (!over) return
 
@@ -62,11 +62,19 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
 
     if (draggedDeal.stage === overStage && active.id === over.id) return
 
+    // Atualização otimista
     setDeals((prev) =>
       prev.map((d) => (d.id === active.id ? { ...d, stage: overStage } : d))
     )
 
-    updateDealStage(draggedDeal.id, overStage)
+    try {
+      await updateDealStage(draggedDeal.id, overStage)
+    } catch {
+      // Rollback em caso de erro
+      setDeals((prev) =>
+        prev.map((d) => (d.id === active.id ? { ...d, stage: draggedDeal.stage } : d))
+      )
+    }
   }
 
   const dealsByStage = STAGES.reduce<Record<DealStage, DealWithLead[]>>(

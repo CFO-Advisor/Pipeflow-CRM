@@ -47,7 +47,7 @@ export default async function BillingPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Plano atual</CardTitle>
-            <Badge className={isPro ? 'bg-blue-600' : 'bg-slate-500'}>
+            <Badge variant={isPro ? 'default' : 'secondary'}>
               {isPro ? 'Pro' : 'Free'}
             </Badge>
           </div>

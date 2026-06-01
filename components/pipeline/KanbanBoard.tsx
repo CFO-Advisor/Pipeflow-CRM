@@ -35,10 +35,11 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
 
-  // Sincroniza o estado local quando o servidor retorna dados novos (ex: após criar negócio)
+  // Sincroniza apenas quando o servidor retorna novos dados (nova referência de initialDeals)
+  // Não inclui activeId para não reverter a coluna após cada drag
   useEffect(() => {
-    if (activeId === null) setDeals(initialDeals)
-  }, [initialDeals, activeId])
+    setDeals(initialDeals)
+  }, [initialDeals])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })

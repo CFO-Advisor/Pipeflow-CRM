@@ -29,7 +29,8 @@ export function DealCard({ deal }: DealCardProps) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isDragging ? undefined : transition ?? 'transform 150ms ease',
+    // 'none' sobrescreve transition-all da classe CSS durante o drag; undefined deixaria a classe CSS assumir com delay
+    transition: isDragging ? 'none' : (transition ?? 'transform 150ms ease'),
     opacity: isDragging ? 0.4 : 1,
   }
 

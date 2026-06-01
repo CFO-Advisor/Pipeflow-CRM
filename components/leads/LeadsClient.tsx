@@ -110,7 +110,7 @@ export function LeadsClient({ leads: initialLeads, workspaceId, planLimitReached
           </Card>
         ) : (
           filtered.map((lead) => (
-            <Card key={lead.id} className="p-4 hover:shadow-md transition-shadow">
+            <Card key={lead.id} className="p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
               <div className="flex items-start justify-between gap-4">
                 <Link href={`/leads/${lead.id}`} className="flex-1 min-w-0">
                   <div className="flex items-start gap-3">

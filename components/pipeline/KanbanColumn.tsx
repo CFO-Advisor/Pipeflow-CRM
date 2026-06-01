@@ -42,7 +42,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
         <Button
           variant="ghost"
           size="icon"
-          className="w-6 h-6 text-white hover:bg-white/20"
+          className="w-6 h-6 text-white hover:bg-white/20 transition-colors duration-150"
           onClick={() => setShowForm(true)}
         >
           <Plus className="w-4 h-4" />

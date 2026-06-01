@@ -5,7 +5,17 @@ import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Calendar, DollarSign, User } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { DealWithLead } from '@/types'
+import type { DealStage, DealWithLead } from '@/types'
+
+// Borda lateral que indica a "temperatura" do negócio — mais quente = mais próximo de fechar
+const stageAccent: Record<DealStage, string> = {
+  new_lead: 'border-l-blue-400',
+  contacted: 'border-l-cyan-500',
+  proposal_sent: 'border-l-violet-500',
+  negotiation: 'border-l-amber-500',
+  closed_won: 'border-l-green-500',
+  closed_lost: 'border-l-red-400',
+}
 
 interface DealCardProps {
   deal: DealWithLead
@@ -24,15 +34,16 @@ export function DealCard({ deal }: DealCardProps) {
   }
 
   const isOverdue = deal.deadline && new Date(deal.deadline) < new Date()
+  const accent = stageAccent[deal.stage]
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="p-3 shadow-sm hover:shadow-md transition-all duration-150 cursor-default bg-card">
+      <Card className={`p-3 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-card border-l-4 ${accent}`}>
         <div className="flex items-start gap-2">
           <button
             {...attributes}
             {...listeners}
-            className="mt-0.5 text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing flex-shrink-0"
+            className="mt-0.5 text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing flex-shrink-0 transition-colors duration-150"
             aria-label="Arrastar"
           >
             <GripVertical className="w-4 h-4" />

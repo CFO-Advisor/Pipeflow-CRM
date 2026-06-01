@@ -32,14 +32,14 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
         const isLast = index === activities.length - 1
 
         return (
-          <div key={activity.id} className="relative flex gap-3 pb-5">
+          <div key={activity.id} className="relative flex gap-3 pb-5 group">
             {!isLast && (
               <div className="absolute left-4 top-8 bottom-0 w-px bg-border" />
             )}
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 z-10 ${config.color}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 z-10 transition-transform duration-150 group-hover:scale-110 ${config.color}`}>
               <Icon className="w-4 h-4" />
             </div>
-            <div className="flex-1 min-w-0 pt-0.5">
+            <div className="flex-1 min-w-0 pt-0.5 rounded-lg px-2 -mx-2 group-hover:bg-muted/40 transition-colors duration-150">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-semibold text-foreground">{config.label}</span>
                 <span className="text-xs text-muted-foreground">por {authorName}</span>

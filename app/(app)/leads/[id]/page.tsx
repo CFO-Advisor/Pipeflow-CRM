@@ -66,26 +66,26 @@ export default async function LeadDetailPage({ params }: Props) {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             {lead.email && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="w-4 h-4 text-muted-foreground" />
+              <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-150 group">
+                <Mail className="w-4 h-4 group-hover:text-primary transition-colors duration-150" />
                 {lead.email}
-              </div>
+              </a>
             )}
             {lead.phone && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="w-4 h-4 text-muted-foreground" />
+              <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-150 group">
+                <Phone className="w-4 h-4 group-hover:text-primary transition-colors duration-150" />
                 {lead.phone}
-              </div>
+              </a>
             )}
             {lead.company && (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Building2 className="w-4 h-4 text-muted-foreground" />
+                <Building2 className="w-4 h-4" />
                 {lead.company}
               </div>
             )}
             {lead.position && (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Briefcase className="w-4 h-4 text-muted-foreground" />
+                <Briefcase className="w-4 h-4" />
                 {lead.position}
               </div>
             )}

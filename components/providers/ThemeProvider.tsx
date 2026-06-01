@@ -20,30 +20,44 @@ export function useTheme() {
   return useContext(ThemeContext)
 }
 
+function getSystemPref(): 'dark' | 'light' {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 function resolve(theme: Theme): 'dark' | 'light' {
   if (theme === 'dark') return 'dark'
   if (theme === 'light') return 'light'
-  if (typeof window !== 'undefined') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  }
+  if (typeof window !== 'undefined') return getSystemPref()
   return 'light'
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system')
+function applyTheme(theme: Theme) {
+  document.documentElement.classList.toggle('dark', resolve(theme) === 'dark')
+}
 
+function saveCookie(value: string) {
+  document.cookie = `theme=${value};path=/;max-age=31536000;samesite=lax`
+}
+
+export function ThemeProvider({
+  children,
+  initialTheme = 'system',
+}: {
+  children: ReactNode
+  initialTheme?: Theme
+}) {
+  const [theme, setThemeState] = useState<Theme>(initialTheme)
+
+  // Para tema 'system': aplica preferência do SO no client (o servidor não sabe)
   useEffect(() => {
-    const stored = (localStorage.getItem('theme') ?? 'system') as Theme
-    setThemeState(stored)
-  }, [])
+    if (theme === 'system') applyTheme('system')
+  }, [theme])
 
-  // Sync system preference changes in real time
+  // Atualiza em tempo real quando o SO muda de light ↔ dark
   useEffect(() => {
     if (theme !== 'system') return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => {
-      document.documentElement.classList.toggle('dark', mq.matches)
-    }
+    const handler = () => applyTheme('system')
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [theme])
@@ -52,8 +66,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   function setTheme(next: Theme) {
     setThemeState(next)
-    localStorage.setItem('theme', next)
-    document.documentElement.classList.toggle('dark', resolve(next) === 'dark')
+    saveCookie(next)
+    applyTheme(next)
   }
 
   return (

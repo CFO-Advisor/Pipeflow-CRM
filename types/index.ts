@@ -10,7 +10,8 @@ export type DealStage =
   | 'negotiation'
   | 'closed_won'
   | 'closed_lost'
-export type ActivityType = 'call' | 'email' | 'meeting' | 'note'
+export type ActivityType = 'call' | 'email' | 'meeting' | 'note' | 'proposal'
+export type AttachmentCategory = 'proposta' | 'cotacao' | 'apresentacao'
 
 export interface Workspace {
   id: string
@@ -70,6 +71,7 @@ export interface Lead {
   position: string | null
   status: string
   assigned_to: string | null
+  photo_url: string | null
   created_at: string
   updated_at: string
 }
@@ -97,6 +99,9 @@ export interface Activity {
   author_id: string | null
   type: ActivityType
   description: string
+  scheduled_at: string | null
+  attachment_url: string | null
+  attachment_name: string | null
   created_at: string
 }
 
@@ -112,6 +117,20 @@ export interface WorkspaceMemberWithUser extends WorkspaceMember {
 
 export interface DealWithLead extends Deal {
   lead: Pick<Lead, 'id' | 'name' | 'company'> | null
+  company: Pick<Company, 'id' | 'name'> | null
+}
+
+export interface DealAttachment {
+  id: string
+  deal_id: string
+  workspace_id: string
+  category: AttachmentCategory
+  name: string
+  file_path: string
+  file_size: number | null
+  mime_type: string | null
+  created_at: string
+  created_by: string | null
 }
 
 export interface ActivityWithAuthor extends Activity {

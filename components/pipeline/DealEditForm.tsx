@@ -14,31 +14,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import type { DealStage, Lead } from '@/types'
+import type { DealWithLead } from '@/types'
 
-interface DealFormProps {
+interface DealEditFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  workspaceId: string
-  defaultStage: DealStage
-  leads: Pick<Lead, 'id' | 'name'>[]
-  companyId?: string | null
+  deal: DealWithLead
 }
 
-export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads, companyId }: DealFormProps) {
+export function DealEditForm({ open, onOpenChange, deal }: DealEditFormProps) {
   const router = useRouter()
   const [form, setForm] = useState({
-    title: '',
-    value: '',
-    lead_id: '',
-    deadline: '',
+    title: deal.title,
+    value: deal.value > 0 ? String(deal.value) : '',
+    deadline: deal.deadline ? deal.deadline.slice(0, 10) : '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -49,27 +38,24 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.lead_id) { setError('Selecione um lead.'); return }
-
     setLoading(true)
     setError('')
     const supabase = createClient()
 
-    const { error: err } = await supabase.from('deals').insert({
-      workspace_id: workspaceId,
-      lead_id: form.lead_id,
-      title: form.title,
-      value: parseFloat(form.value) || 0,
-      stage: defaultStage,
-      deadline: form.deadline || undefined,
-      ...(companyId ? { company_id: companyId } : {}),
-    })
+    const { error: err } = await supabase
+      .from('deals')
+      .update({
+        title: form.title,
+        value: parseFloat(form.value) || 0,
+        deadline: form.deadline || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', deal.id)
 
     if (err) { setError(err.message); setLoading(false); return }
 
     router.refresh()
     onOpenChange(false)
-    setForm({ title: '', value: '', lead_id: '', deadline: '' })
     setLoading(false)
   }
 
@@ -77,8 +63,8 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Novo negócio</DialogTitle>
-          <DialogDescription>Adicione um negócio ao pipeline.</DialogDescription>
+          <DialogTitle>Editar negócio</DialogTitle>
+          <DialogDescription>Atualize as informações do negócio.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -86,19 +72,6 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
               {error}
             </div>
           )}
-          <div className="space-y-2">
-            <Label>Lead *</Label>
-            <Select value={form.lead_id} onValueChange={(v) => update('lead_id', v ?? '')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um lead" />
-              </SelectTrigger>
-              <SelectContent>
-                {leads.map((lead) => (
-                  <SelectItem key={lead.id} value={lead.id} label={lead.name}>{lead.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="title">Título *</Label>
             <Input
@@ -137,7 +110,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
               Cancelar
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" disabled={loading}>
-              {loading ? 'Criando...' : 'Criar negócio'}
+              {loading ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>
         </form>

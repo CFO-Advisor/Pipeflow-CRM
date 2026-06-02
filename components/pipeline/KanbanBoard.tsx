@@ -29,9 +29,10 @@ interface KanbanBoardProps {
   deals: DealWithLead[]
   workspaceId: string
   leads: Pick<Lead, 'id' | 'name'>[]
+  companyId?: string | null
 }
 
-export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanBoardProps) {
+export function KanbanBoard({ deals: initialDeals, workspaceId, leads, companyId }: KanbanBoardProps) {
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
 
@@ -101,13 +102,15 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads }: KanbanB
               deals={dealsByStage[stage]}
               workspaceId={workspaceId}
               leads={leads}
+              companyId={companyId}
+              showCompany={!companyId}
             />
           </div>
         ))}
       </div>
 
       <DragOverlay dropAnimation={null}>
-        {activeDeal && <DealCard deal={activeDeal} />}
+        {activeDeal && <DealCard deal={activeDeal} showCompany={!companyId} />}
       </DragOverlay>
     </DndContext>
   )

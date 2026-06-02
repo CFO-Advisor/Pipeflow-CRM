@@ -1,12 +1,17 @@
-import { Phone, Mail, Users, FileText } from 'lucide-react'
+import { Phone, Mail, Users, FileText, Send, Download } from 'lucide-react'
 import { formatRelativeDate } from '@/lib/utils'
 import type { ActivityType, ActivityWithAuthor } from '@/types'
 
-const activityConfig: Record<ActivityType, { icon: React.ComponentType<{ className?: string }>, label: string, color: string }> = {
-  call: { icon: Phone, label: 'Ligação', color: 'bg-blue-100 text-blue-600' },
-  email: { icon: Mail, label: 'E-mail', color: 'bg-purple-100 text-purple-600' },
-  meeting: { icon: Users, label: 'Reunião', color: 'bg-orange-100 text-orange-600' },
-  note: { icon: FileText, label: 'Nota', color: 'bg-muted text-muted-foreground' },
+const activityConfig: Record<ActivityType, {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  color: string
+}> = {
+  call:     { icon: Phone,     label: 'Ligação',            color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
+  email:    { icon: Mail,      label: 'E-mail',             color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
+  meeting:  { icon: Users,     label: 'Reunião',            color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
+  note:     { icon: FileText,  label: 'Nota',               color: 'bg-muted text-muted-foreground' },
+  proposal: { icon: Send,      label: 'Envio de Proposta',  color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
 }
 
 interface ActivityTimelineProps {
@@ -25,7 +30,7 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
   return (
     <div className="space-y-0">
       {activities.map((activity, index) => {
-        const config = activityConfig[activity.type as ActivityType]
+        const config = activityConfig[activity.type as ActivityType] ?? activityConfig.note
         const Icon = config.icon
         const authorName =
           activity.author?.user_metadata?.full_name ?? activity.author?.email ?? 'Desconhecido'
@@ -47,7 +52,24 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
                   {formatRelativeDate(activity.created_at)}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{activity.description}</p>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                {activity.description}
+              </p>
+
+              {/* Anexo de proposta */}
+              {activity.attachment_url && activity.attachment_name && (
+                <a
+                  href={activity.attachment_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={activity.attachment_name}
+                  className="inline-flex items-center gap-2 mt-2 px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted/60 transition-colors text-xs font-medium text-foreground group/link"
+                >
+                  <FileText className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                  <span className="truncate max-w-[200px]">{activity.attachment_name}</span>
+                  <Download className="w-3 h-3 text-muted-foreground group-hover/link:text-foreground transition-colors flex-shrink-0" />
+                </a>
+              )}
             </div>
           </div>
         )

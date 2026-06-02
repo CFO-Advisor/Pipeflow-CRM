@@ -30,17 +30,42 @@ export default async function DashboardPage() {
   const workspaceId = cookieStore.get('current_workspace_id')?.value
   if (!workspaceId) redirect('/register')
 
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('name, plan')
+    .eq('id', workspaceId)
+    .single()
+
+  const companyId =
+    workspace?.plan === 'max'
+      ? (cookieStore.get('current_company_id')?.value ?? null)
+      : null
+
+  let leadsQuery = supabase.from('leads').select('id').eq('workspace_id', workspaceId)
+  let dealsQuery = supabase
+    .from('deals')
+    .select('*, lead:leads(id, name, company)')
+    .eq('workspace_id', workspaceId)
+
+  if (companyId) {
+    leadsQuery = leadsQuery.eq('company_id', companyId)
+    dealsQuery = dealsQuery.eq('company_id', companyId)
+  }
+
+  const [{ data: leads }, { data: deals }] = await Promise.all([leadsQuery, dealsQuery])
+
+  let activeCompanyName: string | null = null
+  if (companyId) {
+    const { data: company } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('id', companyId)
+      .single()
+    activeCompanyName = company?.name ?? null
+  }
+
   const sevenDaysFromNow = new Date()
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
-
-  const [{ data: leads }, { data: deals }, { data: workspace }] = await Promise.all([
-    supabase.from('leads').select('id').eq('workspace_id', workspaceId),
-    supabase
-      .from('deals')
-      .select('*, lead:leads(id, name, company)')
-      .eq('workspace_id', workspaceId),
-    supabase.from('workspaces').select('name, plan').eq('id', workspaceId).single(),
-  ])
 
   const allDeals = (deals ?? []) as DealWithLead[]
   const openDeals = allDeals.filter(
@@ -70,7 +95,9 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">{workspace?.name}</p>
+        <p className="text-muted-foreground text-sm mt-1">
+          {activeCompanyName ? `${workspace?.name} · ${activeCompanyName}` : workspace?.name}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

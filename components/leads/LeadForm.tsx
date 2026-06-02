@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Camera, X, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,6 +38,7 @@ export function LeadForm({
 }: LeadFormProps) {
   const router = useRouter()
   const isEdit = !!lead
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
     name: lead?.name ?? '',
@@ -48,11 +50,46 @@ export function LeadForm({
   const [companyId, setCompanyId] = useState<string | null>(
     lead?.company_id ?? currentCompanyId ?? null
   )
+  const [photoPreview, setPhotoPreview] = useState<string | null>(lead?.photo_url ?? null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   function update(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!fileInputRef.current) return
+    fileInputRef.current.value = ''
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  function removePhoto() {
+    setPhotoFile(null)
+    setPhotoPreview(null)
+  }
+
+  async function uploadPhoto(leadId: string): Promise<string | null> {
+    if (!photoFile) return photoPreview // mantém URL existente se não mudou
+    setUploadingPhoto(true)
+    const supabase = createClient()
+    const ext = photoFile.name.split('.').pop()
+    const path = `${workspaceId}/${leadId}.${ext}`
+
+    const { error: uploadErr } = await supabase.storage
+      .from('lead-photos')
+      .upload(path, photoFile, { upsert: true, contentType: photoFile.type })
+
+    if (uploadErr) { setUploadingPhoto(false); return null }
+
+    const { data } = supabase.storage.from('lead-photos').getPublicUrl(path)
+    setUploadingPhoto(false)
+    return data.publicUrl
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -73,22 +110,40 @@ export function LeadForm({
     }
 
     if (isEdit) {
+      // Upload foto se nova foi selecionada, ou remove se preview foi limpo
+      const photo_url = photoFile
+        ? await uploadPhoto(lead.id)
+        : photoPreview // null = removida, string = mantida
       const { error: err } = await supabase
         .from('leads')
-        .update({ ...payload, updated_at: new Date().toISOString() })
+        .update({ ...payload, photo_url, updated_at: new Date().toISOString() })
         .eq('id', lead.id)
       if (err) { setError(err.message); setLoading(false); return }
     } else {
-      const { error: err } = await supabase
+      const { data: newLead, error: err } = await supabase
         .from('leads')
         .insert({ ...payload, workspace_id: workspaceId })
-      if (err) { setError(err.message); setLoading(false); return }
+        .select('id')
+        .single()
+      if (err || !newLead) { setError(err?.message ?? 'Erro ao criar lead'); setLoading(false); return }
+
+      // Agora que temos o ID, faz upload e atualiza
+      if (photoFile) {
+        const photo_url = await uploadPhoto(newLead.id)
+        if (photo_url) {
+          await supabase.from('leads').update({ photo_url }).eq('id', newLead.id)
+        }
+      }
     }
 
     router.refresh()
     onOpenChange(false)
     setLoading(false)
   }
+
+  const initials = form.name
+    ? form.name.charAt(0).toUpperCase()
+    : '?'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -106,7 +161,62 @@ export function LeadForm({
             </div>
           )}
 
-          {/* Empresa do grupo — somente plano MAX */}
+          {/* ── Foto do lead ── */}
+          <div className="flex justify-center">
+            <div className="relative group">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-20 h-20 rounded-full overflow-hidden border-2 border-dashed border-border hover:border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {photoPreview ? (
+                  <img
+                    src={photoPreview}
+                    alt="Foto do lead"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-primary/10 flex flex-col items-center justify-center gap-1">
+                    <span className="text-2xl font-bold text-primary">{initials}</span>
+                    <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+                  </div>
+                )}
+              </button>
+
+              {/* Overlay de câmera ao hover */}
+              {!photoPreview && (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+              )}
+
+              {/* Botão de remover foto */}
+              {photoPreview && (
+                <button
+                  type="button"
+                  onClick={removePhoto}
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handlePhotoSelect}
+            />
+          </div>
+          <p className="text-center text-xs text-muted-foreground -mt-2">
+            Clique para adicionar foto (JPG, PNG, WEBP — máx. 5 MB)
+          </p>
+
+          {/* ── Empresa do grupo (plano MAX) ── */}
           {companies.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="company_group">Empresa do grupo</Label>
@@ -118,14 +228,13 @@ export function LeadForm({
               >
                 <option value="">Sem empresa vinculada</option>
                 {companies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
           )}
 
+          {/* ── Campos de contato ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2 space-y-2">
               <Label htmlFor="name">Nome *</Label>
@@ -175,12 +284,16 @@ export function LeadForm({
               />
             </div>
           </div>
+
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" disabled={loading}>
-              {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Criar lead'}
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" disabled={loading || uploadingPhoto}>
+              {loading || uploadingPhoto
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Salvando...</>
+                : isEdit ? 'Salvar' : 'Criar lead'
+              }
             </Button>
           </DialogFooter>
         </form>

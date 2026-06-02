@@ -23,9 +23,11 @@ interface KanbanColumnProps {
   deals: DealWithLead[]
   workspaceId: string
   leads: Pick<Lead, 'id' | 'name'>[]
+  companyId?: string | null
+  showCompany?: boolean
 }
 
-export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnProps) {
+export function KanbanColumn({ stage, deals, workspaceId, leads, companyId, showCompany }: KanbanColumnProps) {
   const [showForm, setShowForm] = useState(false)
   const config = stageConfig[stage]
   const { setNodeRef, isOver } = useDroppable({ id: stage })
@@ -64,7 +66,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
             </div>
           )}
           {deals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} />
+            <DealCard key={deal.id} deal={deal} showCompany={showCompany} />
           ))}
         </div>
       </SortableContext>
@@ -75,6 +77,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads }: KanbanColumnP
         workspaceId={workspaceId}
         defaultStage={stage}
         leads={leads}
+        companyId={companyId}
       />
     </div>
   )

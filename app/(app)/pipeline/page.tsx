@@ -30,7 +30,7 @@ export default async function PipelinePage() {
 
   let dealsQuery = supabase
     .from('deals')
-    .select('*, lead:leads(id, name, company)')
+    .select('*, lead:leads(id, name, company), company:companies(id, name)')
     .eq('workspace_id', workspaceId)
     .order('position', { ascending: true })
 
@@ -61,6 +61,7 @@ export default async function PipelinePage() {
           deals={(deals ?? []) as DealWithLead[]}
           workspaceId={workspaceId}
           leads={leads ?? []}
+          companyId={companyId}
         />
       </div>
     </div>

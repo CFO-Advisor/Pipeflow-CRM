@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Building2, Mail, Phone, Trash2, Users, Layers } from 'lucide-react'
+import { Plus, Search, Building2, Mail, Phone, Trash2, Users, Layers, Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,6 +30,7 @@ export function LeadsClient({
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [editingLead, setEditingLead] = useState<Lead | null>(null)
 
   const companyMap = Object.fromEntries(companies.map((c) => [c.id, c.name]))
 
@@ -151,10 +152,14 @@ export function LeadsClient({
                 <div className="flex items-start justify-between gap-4">
                   <Link href={`/leads/${lead.id}`} className="flex-1 min-w-0">
                     <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-primary font-semibold text-sm">
-                          {lead.name.charAt(0).toUpperCase()}
-                        </span>
+                      <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden bg-primary/10 flex items-center justify-center">
+                        {lead.photo_url ? (
+                          <img src={lead.photo_url} alt={lead.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-primary font-semibold text-sm">
+                            {lead.name.charAt(0).toUpperCase()}
+                          </span>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium text-foreground hover:text-blue-600 transition-colors">
@@ -192,6 +197,14 @@ export function LeadsClient({
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="w-8 h-8 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
+                      onClick={() => setEditingLead(lead)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="w-8 h-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                       onClick={() => handleDelete(lead.id)}
                     >
@@ -213,6 +226,17 @@ export function LeadsClient({
         companies={companies}
         currentCompanyId={currentCompanyId}
       />
+
+      {editingLead && (
+        <LeadForm
+          key={editingLead.id}
+          open={!!editingLead}
+          onOpenChange={(open) => { if (!open) setEditingLead(null) }}
+          workspaceId={workspaceId}
+          lead={editingLead}
+          companies={companies}
+        />
+      )}
     </div>
   )
 }

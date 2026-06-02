@@ -55,6 +55,18 @@ export default async function LeadDetailPage({ params }: Props) {
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
+
+        {/* Avatar / foto */}
+        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-primary/10 flex items-center justify-center">
+          {lead.photo_url ? (
+            <img src={lead.photo_url} alt={lead.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-primary font-bold text-lg">
+              {lead.name.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+
         <h1 className="text-3xl font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">{lead.name}</h1>
         <Badge variant="outline">{lead.status === 'active' ? 'Ativo' : 'Inativo'}</Badge>
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, ArrowLeftRight } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,11 @@ interface UserMenuProps {
 export function UserMenu({ email, name, collapsed }: UserMenuProps) {
   const router = useRouter()
 
-  async function handleLogout() {
+  function handleLogout() {
+    router.push('/api/auth/logout')
+  }
+
+  function handleSwitchUser() {
     router.push('/api/auth/logout')
   }
 
@@ -29,7 +33,7 @@ export function UserMenu({ email, name, collapsed }: UserMenuProps) {
     ? name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
     : email.slice(0, 2).toUpperCase()
 
-  /* ── Modo recolhido: só avatar com dropdown ── */
+  /* ── Modo recolhido: avatar com dropdown ── */
   if (collapsed) {
     return (
       <DropdownMenu>
@@ -49,6 +53,11 @@ export function UserMenu({ email, name, collapsed }: UserMenuProps) {
             {name && <p className="text-xs text-muted-foreground font-normal">{email}</p>}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSwitchUser} className="cursor-pointer">
+            <ArrowLeftRight className="w-4 h-4 mr-2 text-muted-foreground" />
+            Trocar de usuário
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
             <LogOut className="w-4 h-4 mr-2" />
             Sair
@@ -58,7 +67,7 @@ export function UserMenu({ email, name, collapsed }: UserMenuProps) {
     )
   }
 
-  /* ── Modo expandido: user info + botão Sair visível ── */
+  /* ── Modo expandido: user info + botões ── */
   return (
     <div className="space-y-1">
       {/* Informações do usuário */}
@@ -74,10 +83,19 @@ export function UserMenu({ email, name, collapsed }: UserMenuProps) {
         </div>
       </div>
 
-      {/* Botão Sair */}
+      {/* Trocar de usuário */}
+      <button
+        onClick={handleSwitchUser}
+        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors duration-150"
+      >
+        <ArrowLeftRight className="w-4 h-4 flex-shrink-0" />
+        Trocar de usuário
+      </button>
+
+      {/* Sair */}
       <button
         onClick={handleLogout}
-        className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors duration-150"
+        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors duration-150"
       >
         <LogOut className="w-4 h-4 flex-shrink-0" />
         Sair

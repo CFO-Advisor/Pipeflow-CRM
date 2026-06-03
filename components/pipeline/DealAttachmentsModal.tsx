@@ -20,6 +20,7 @@ import {
   Paperclip,
   Loader2,
 } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { AttachmentCategory, DealAttachment, DealWithLead } from '@/types'
 
 const CATEGORIES: {
@@ -80,6 +81,7 @@ export function DealAttachmentsModal({ open, onOpenChange, deal, workspaceId }: 
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteAttachment, setConfirmDeleteAttachment] = useState<DealAttachment | null>(null)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -146,8 +148,9 @@ export function DealAttachmentsModal({ open, onOpenChange, deal, workspaceId }: 
     setUploading(false)
   }
 
-  async function handleDelete(attachment: DealAttachment) {
-    if (!confirm(`Excluir "${attachment.name}"?`)) return
+  async function handleDeleteConfirmed() {
+    const attachment = confirmDeleteAttachment
+    if (!attachment) return
     setDeletingId(attachment.id)
     const supabase = createClient()
 
@@ -176,6 +179,7 @@ export function DealAttachmentsModal({ open, onOpenChange, deal, workspaceId }: 
   const totalCount = attachments.length
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -296,7 +300,7 @@ export function DealAttachmentsModal({ open, onOpenChange, deal, workspaceId }: 
                       variant="ghost"
                       size="icon"
                       className="w-7 h-7 text-muted-foreground hover:text-red-600"
-                      onClick={() => handleDelete(att)}
+                      onClick={() => setConfirmDeleteAttachment(att)}
                       disabled={deletingId === att.id}
                       title="Excluir"
                     >
@@ -314,5 +318,15 @@ export function DealAttachmentsModal({ open, onOpenChange, deal, workspaceId }: 
         </div>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={!!confirmDeleteAttachment}
+      onOpenChange={(open) => { if (!open) setConfirmDeleteAttachment(null) }}
+      title="Excluir anexo"
+      description={confirmDeleteAttachment ? `"${confirmDeleteAttachment.name}" será excluído permanentemente.` : undefined}
+      confirmLabel="Excluir"
+      onConfirm={handleDeleteConfirmed}
+    />
+    </>
   )
 }

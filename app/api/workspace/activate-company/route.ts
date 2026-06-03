@@ -42,15 +42,34 @@ export async function GET(req: NextRequest) {
 
   if (!company) return NextResponse.redirect(redirectTo)
 
-  // Confirmar que o usuário é membro do workspace
+  // Confirmar que o usuário é membro do workspace e verificar sales_role
   const { data: member } = await service
     .from('workspace_members')
-    .select('id')
+    .select('id, sales_role')
     .eq('workspace_id', workspaceId)
     .eq('user_id', user.id)
     .single()
 
   if (!member) return NextResponse.redirect(redirectTo)
+
+  // No plano MAX, sellers e managers sem acesso explícito não podem ativar a empresa
+  const { data: workspace } = await service
+    .from('workspaces')
+    .select('plan')
+    .eq('id', workspaceId)
+    .single()
+
+  const restrictedRoles = ['seller', 'manager']
+  if (workspace?.plan === 'max' && restrictedRoles.includes(member.sales_role ?? '')) {
+    const { data: access } = await service
+      .from('user_company_access')
+      .select('id')
+      .eq('member_id', member.id)
+      .eq('company_id', companyId)
+      .single()
+
+    if (!access) return NextResponse.redirect(redirectTo)
+  }
 
   response.cookies.set('current_company_id', companyId, {
     path: '/',

@@ -8,16 +8,26 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
-  Cell,
 } from 'recharts'
 import type { DealStage } from '@/types'
 
-interface FunnelChartProps {
-  data: Array<{ stage: DealStage; label: string; count: number }>
+export interface RepStageData {
+  name: string
+  new_lead: number
+  contacted: number
+  proposal_sent: number
+  negotiation: number
+  closed_won: number
+  closed_lost: number
 }
 
-const stageColors: Record<DealStage, string> = {
+const STAGE_ORDER: DealStage[] = [
+  'new_lead', 'contacted', 'proposal_sent', 'negotiation', 'closed_won', 'closed_lost',
+]
+
+const STAGE_COLORS: Record<DealStage, string> = {
   new_lead: '#3b82f6',
   contacted: '#60a5fa',
   proposal_sent: '#818cf8',
@@ -26,12 +36,22 @@ const stageColors: Record<DealStage, string> = {
   closed_lost: '#dc2626',
 }
 
-export function FunnelChart({ data }: FunnelChartProps) {
+const STAGE_LABELS: Record<DealStage, string> = {
+  new_lead: 'Novo',
+  contacted: 'Contato',
+  proposal_sent: 'Proposta',
+  negotiation: 'Negoc.',
+  closed_won: 'Ganho',
+  closed_lost: 'Perdido',
+}
+
+interface RepStageBreakdownProps {
+  data: RepStageData[]
+}
+
+export function RepStageBreakdown({ data }: RepStageBreakdownProps) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
-
-  const total = data.reduce((sum, d) => sum + d.count, 0)
-  const isEmpty = total === 0
 
   const gridColor = isDark ? '#334155' : '#f1f5f9'
   const tickColor = isDark ? '#64748b' : '#94a3b8'
@@ -39,21 +59,20 @@ export function FunnelChart({ data }: FunnelChartProps) {
   const tooltipBorder = isDark ? '#334155' : '#e2e8f0'
   const tooltipText = isDark ? '#f1f5f9' : '#1e293b'
 
-  if (isEmpty) {
+  if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[260px] text-center gap-2">
-        <p className="text-muted-foreground text-sm">Nenhum negócio no pipeline ainda.</p>
-        <p className="text-xs text-muted-foreground/70">Crie seu primeiro negócio na página Pipeline.</p>
+      <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">
+        Nenhum dado disponível.
       </div>
     )
   }
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
         <XAxis
-          dataKey="label"
+          dataKey="name"
           tick={{ fontSize: 11, fill: tickColor }}
           axisLine={false}
           tickLine={false}
@@ -73,19 +92,25 @@ export function FunnelChart({ data }: FunnelChartProps) {
             color: tooltipText,
             boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
           }}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          formatter={(value: any) => {
-            const num = Number(value) || 0
-            const pct = total > 0 ? Math.round((num / total) * 100) : 0
-            return [`${num} (${pct}% do total)`, 'Negócios']
-          }}
           cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}
         />
-        <Bar dataKey="count" radius={[6, 6, 0, 0]} isAnimationActive animationDuration={600} animationEasing="ease-out">
-          {data.map((entry) => (
-            <Cell key={entry.stage} fill={stageColors[entry.stage]} />
-          ))}
-        </Bar>
+        <Legend
+          wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
+          iconType="square"
+          iconSize={8}
+          formatter={(value) => STAGE_LABELS[value as DealStage] ?? value}
+        />
+        {STAGE_ORDER.map((stage) => (
+          <Bar
+            key={stage}
+            dataKey={stage}
+            stackId="a"
+            fill={STAGE_COLORS[stage]}
+            name={stage}
+            isAnimationActive
+            animationDuration={600}
+          />
+        ))}
       </BarChart>
     </ResponsiveContainer>
   )

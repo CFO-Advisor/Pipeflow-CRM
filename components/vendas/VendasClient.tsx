@@ -2,8 +2,10 @@
 
 import { UserX, Users, Briefcase, DollarSign, TrendingUp } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
+import { RepLeaderboard } from './RepLeaderboard'
+import { RepStageBreakdown } from './RepStageBreakdown'
 import type { Deal, Lead, DealStage, SalesRole } from '@/types'
 
 // ── Configuração de etapas ──────────────────────────────────────────
@@ -263,6 +265,50 @@ export function VendasClient({ members, deals, leads }: VendasClientProps) {
           </Card>
         ))}
       </div>
+
+      {/* Gráficos analíticos */}
+      {members.length > 0 && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Ranking de Representantes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RepLeaderboard
+                reps={members
+                  .filter((m) => m.user_id)
+                  .map((m) => {
+                    const { pipelineValue, wonDeals, conversionRate } = calcMetrics(m.user_id, deals, leads)
+                    return {
+                      name: m.name ?? m.email.split('@')[0],
+                      pipelineValue,
+                      wonDeals: wonDeals.length,
+                      conversionRate,
+                    }
+                  })}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Negócios por Etapa — por Rep</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RepStageBreakdown
+                data={members
+                  .filter((m) => m.user_id)
+                  .map((m) => {
+                    const { byStage } = calcMetrics(m.user_id, deals, leads)
+                    return {
+                      name: m.name ?? m.email.split('@')[0],
+                      ...byStage,
+                    }
+                  })}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Grid de cards por representante */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

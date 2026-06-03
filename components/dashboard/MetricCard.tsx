@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
 
 interface MetricCardProps {
@@ -8,6 +9,8 @@ interface MetricCardProps {
   iconColor?: string
   iconBg?: string
   description?: string
+  delta?: number
+  deltaLabel?: string
 }
 
 export function MetricCard({
@@ -17,7 +20,21 @@ export function MetricCard({
   iconColor = 'text-blue-600',
   iconBg = 'bg-blue-100',
   description,
+  delta,
+  deltaLabel,
 }: MetricCardProps) {
+  const showDelta = delta !== undefined
+  const d = delta ?? 0
+
+  const DeltaIcon = d === 0 ? Minus : d > 0 ? TrendingUp : TrendingDown
+  const deltaColor =
+    d === 0
+      ? 'text-muted-foreground'
+      : d > 0
+        ? 'text-emerald-600 dark:text-emerald-400'
+        : 'text-red-500 dark:text-red-400'
+  const deltaText = d === 0 ? '0%' : `${d > 0 ? '+' : ''}${d.toFixed(0)}%`
+
   return (
     <Card className="transition-shadow duration-200 hover:shadow-md border-border/60">
       <CardContent className="p-6">
@@ -25,7 +42,14 @@ export function MetricCard({
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
             <p className="text-2xl font-bold text-foreground mt-2 break-words leading-none tracking-tight">{value}</p>
-            {description && (
+            {showDelta && (
+              <div className={`flex items-center gap-1 mt-1.5 ${deltaColor}`}>
+                <DeltaIcon className="w-3 h-3" />
+                <span className="text-xs font-medium">{deltaText}</span>
+                {deltaLabel && <span className="text-xs text-muted-foreground">{deltaLabel}</span>}
+              </div>
+            )}
+            {!showDelta && description && (
               <p className="text-xs text-muted-foreground mt-1.5">{description}</p>
             )}
           </div>

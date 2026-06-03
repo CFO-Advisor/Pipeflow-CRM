@@ -17,14 +17,17 @@ export default async function LeadsPage() {
   const workspaceId = cookieStore.get('current_workspace_id')?.value
   if (!workspaceId) redirect('/dashboard')
 
-  const service = createServiceClient()
-  const { data: workspace } = await service
+  // Usa o client com RLS para garantir que o usuário é membro do workspace do cookie
+  const { data: workspace } = await supabase
     .from('workspaces')
     .select('plan')
     .eq('id', workspaceId)
     .single()
 
-  const isMax = workspace?.plan === 'max'
+  if (!workspace) redirect('/dashboard')
+
+  const isMax = workspace.plan === 'max'
+  const service = createServiceClient()
 
   // Empresas do grupo (somente plano MAX)
   let companies: Company[] = []

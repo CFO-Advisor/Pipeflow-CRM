@@ -13,6 +13,36 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
+      // Verificar se o usuário foi convidado para algum workspace
+      const userEmail = data.user.email
+      if (userEmail) {
+        const { data: pendingInvite } = await supabase
+          .from('workspace_members')
+          .select('id, workspace_id')
+          .eq('invited_email', userEmail)
+          .is('user_id', null)
+          .limit(1)
+          .maybeSingle()
+
+        if (pendingInvite) {
+          // Aceitar convite: associar user_id ao registro pendente
+          await supabase
+            .from('workspace_members')
+            .update({ user_id: data.user.id, invited_email: null })
+            .eq('id', pendingInvite.id)
+
+          // Ativar o workspace do convite via cookie
+          const response = NextResponse.redirect(`${origin}/dashboard`)
+          response.cookies.set('current_workspace_id', pendingInvite.workspace_id, {
+            path: '/',
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+          })
+          return response
+        }
+      }
+
       // Cria workspace se ainda não existe para este usuário
       const { count } = await supabase
         .from('workspace_members')

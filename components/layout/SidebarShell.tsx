@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   PanelLeftClose, PanelLeftOpen,
-  LayoutDashboard, Users, Kanban, Settings, Building2, UserCheck, CalendarDays,
+  LayoutDashboard, Users, Kanban, Settings, Building2, BarChart2, CalendarDays,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
@@ -29,7 +29,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard',      icon: LayoutDashboard },
   { href: '/leads',     label: 'Leads',          icon: Users },
   { href: '/pipeline',  label: 'Pipeline',       icon: Kanban },
-  { href: '/vendas',      label: 'Representantes', icon: UserCheck },
+  { href: '/vendas',      label: 'Performance',    icon: BarChart2 },
   { href: '/calendario',  label: 'Calendário',     icon: CalendarDays },
   { href: '/settings',    label: 'Configurações',  icon: Settings },
 ]
@@ -161,6 +161,7 @@ export function SidebarShell({
       <main
         className={cn(
           'flex-1 min-w-0 px-4 py-6 pt-16 lg:pt-0 lg:py-6 lg:pl-3 lg:pr-6',
+          'bg-background text-foreground',
           'transition-all duration-300 ease-in-out',
           isCollapsed ? 'lg:ml-16' : 'lg:ml-64',
         )}

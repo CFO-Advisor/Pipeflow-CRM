@@ -32,7 +32,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const currentWorkspace =
     workspaces.find((w) => w.id === savedId) ?? workspaces[0]
 
-  if (!savedId) {
+  // Redireciona se cookie ausente OU se aponta para workspace do qual o usuário não é membro
+  if (!savedId || !workspaces.find((w) => w.id === savedId)) {
     redirect(`/api/workspace/activate?id=${currentWorkspace.id}&next=/dashboard`)
   }
 

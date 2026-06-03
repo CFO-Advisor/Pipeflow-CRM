@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "Organize suas vendas, feche mais negócios",
 };
 
+const themeScript = `(function(){try{var t=document.cookie.match(/(?:^|;\\s*)theme=([^;]*)/)?.[1]||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -26,15 +28,18 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const savedTheme = cookieStore.get("theme")?.value ?? "system";
-  const isDark = savedTheme === "dark";
 
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased${isDark ? " dark" : ""}`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <head>
+        {/* Script bloqueante: aplica dark class antes do primeiro paint, sem FOUC */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <ThemeProvider initialTheme={savedTheme as "dark" | "light" | "system"}>
           {children}
         </ThemeProvider>

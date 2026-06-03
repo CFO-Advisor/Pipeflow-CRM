@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { LeadForm } from './LeadForm'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { Company, Lead } from '@/types'
 
 interface LeadsClientProps {
@@ -31,6 +32,7 @@ export function LeadsClient({
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const companyMap = Object.fromEntries(companies.map((c) => [c.id, c.name]))
 
@@ -41,10 +43,10 @@ export function LeadsClient({
       (l.email ?? '').toLowerCase().includes(search.toLowerCase())
   )
 
-  async function handleDelete(id: string) {
-    if (!confirm('Excluir este lead?')) return
+  async function handleDeleteConfirmed() {
+    if (!confirmDeleteId) return
     const supabase = createClient()
-    await supabase.from('leads').delete().eq('id', id)
+    await supabase.from('leads').delete().eq('id', confirmDeleteId).eq('workspace_id', workspaceId)
     router.refresh()
   }
 
@@ -206,7 +208,7 @@ export function LeadsClient({
                       variant="ghost"
                       size="icon"
                       className="w-8 h-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
-                      onClick={() => handleDelete(lead.id)}
+                      onClick={() => setConfirmDeleteId(lead.id)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -237,6 +239,15 @@ export function LeadsClient({
           companies={companies}
         />
       )}
+
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Excluir lead"
+        description="Este lead e todas as suas atividades serão excluídos permanentemente."
+        confirmLabel="Excluir"
+        onConfirm={handleDeleteConfirmed}
+      />
     </div>
   )
 }

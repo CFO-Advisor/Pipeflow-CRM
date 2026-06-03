@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { createClient } from '@/lib/supabase/client'
 
 interface UserMenuProps {
   email: string
@@ -23,10 +22,7 @@ export function UserMenu({ email, name, collapsed }: UserMenuProps) {
   const router = useRouter()
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    router.push('/api/auth/logout')
   }
 
   const initials = name

@@ -77,11 +77,13 @@ export async function POST(req: NextRequest) {
       html: `
         <h2>Você foi convidado!</h2>
         <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
+        <p>Clique no botão abaixo para criar sua conta e entrar automaticamente no workspace:</p>
         <p>
           <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
-            Aceitar convite
+            Aceitar convite e criar conta
           </a>
         </p>
+        <p>Caso já tenha uma conta, <a href="${appUrl}/login">faça login</a> — o convite será aceito automaticamente.</p>
         <p style="color:#94a3b8;font-size:12px">Se você não esperava este convite, pode ignorar este e-mail.</p>
       `,
     })

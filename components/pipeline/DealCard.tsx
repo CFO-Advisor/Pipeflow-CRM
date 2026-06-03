@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { DealEditForm } from './DealEditForm'
 import { DealAttachmentsModal } from './DealAttachmentsModal'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { DealStage, DealWithLead } from '@/types'
 
 // Borda lateral que indica a "temperatura" do negócio — mais quente = mais próximo de fechar
@@ -32,9 +33,9 @@ export function DealCard({ deal, showCompany }: DealCardProps) {
   const [showEdit, setShowEdit] = useState(false)
   const [showAttachments, setShowAttachments] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  async function handleDelete() {
-    if (!confirm(`Excluir o negócio "${deal.title}"?`)) return
+  async function handleDeleteConfirmed() {
     setDeleting(true)
     const supabase = createClient()
     await supabase.from('deals').delete().eq('id', deal.id)
@@ -88,7 +89,7 @@ export function DealCard({ deal, showCompany }: DealCardProps) {
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={handleDelete}
+                    onClick={() => setConfirmDelete(true)}
                     disabled={deleting}
                     className="p-0.5 rounded text-muted-foreground/40 hover:text-red-500 transition-colors duration-150 disabled:opacity-50"
                     aria-label="Excluir negócio"
@@ -145,6 +146,15 @@ export function DealCard({ deal, showCompany }: DealCardProps) {
         onOpenChange={setShowAttachments}
         deal={deal}
         workspaceId={deal.workspace_id}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Excluir negócio"
+        description={`"${deal.title}" será excluído permanentemente.`}
+        confirmLabel="Excluir"
+        onConfirm={handleDeleteConfirmed}
       />
     </>
   )

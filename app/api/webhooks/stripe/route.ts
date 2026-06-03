@@ -35,12 +35,21 @@ export async function POST(req: NextRequest) {
         .update({ plan: newPlan, stripe_subscription_id: session.subscription as string })
         .eq('id', workspaceId)
 
-      if (error) console.error('[webhook/stripe] checkout.session.completed DB error', error)
+      if (error) {
+        console.error('[webhook/stripe] checkout.session.completed DB error', error)
+        return NextResponse.json({ error: 'Erro ao atualizar plano.' }, { status: 500 })
+      }
 
       if (planType === 'max') {
-        await initMaxWorkspace(supabase, workspaceId)
+        const initError = await initMaxWorkspace(supabase, workspaceId)
+        if (initError) {
+          console.error('[webhook/stripe] initMaxWorkspace error', initError)
+          return NextResponse.json({ error: 'Erro ao inicializar plano MAX.' }, { status: 500 })
+        }
       }
     }
+
+    return NextResponse.json({ received: true })
   }
 
   if (event.type === 'customer.subscription.deleted') {
@@ -50,7 +59,12 @@ export async function POST(req: NextRequest) {
       .update({ plan: 'free', stripe_subscription_id: null })
       .eq('stripe_subscription_id', subscription.id)
 
-    if (error) console.error('[webhook/stripe] subscription.deleted DB error', error)
+    if (error) {
+      console.error('[webhook/stripe] subscription.deleted DB error', error)
+      return NextResponse.json({ error: 'Erro ao rebaixar plano.' }, { status: 500 })
+    }
+
+    return NextResponse.json({ received: true })
   }
 
   if (event.type === 'customer.subscription.updated') {
@@ -64,7 +78,10 @@ export async function POST(req: NextRequest) {
         .update({ plan: 'free' })
         .eq('stripe_subscription_id', subscription.id)
 
-      if (error) console.error('[webhook/stripe] subscription.updated (inactive) DB error', error)
+      if (error) {
+        console.error('[webhook/stripe] subscription.updated (inactive) DB error', error)
+        return NextResponse.json({ error: 'Erro ao atualizar plano.' }, { status: 500 })
+      }
     } else {
       const priceId = subscription.items.data[0]?.price.id
       const isMax = priceId === process.env.STRIPE_PRICE_ID_MAX
@@ -77,24 +94,34 @@ export async function POST(req: NextRequest) {
         .select('id')
         .single()
 
-      if (error) console.error('[webhook/stripe] subscription.updated DB error', error)
+      if (error) {
+        console.error('[webhook/stripe] subscription.updated DB error', error)
+        return NextResponse.json({ error: 'Erro ao atualizar plano.' }, { status: 500 })
+      }
 
       if (isMax && updated) {
-        await initMaxWorkspace(supabase, updated.id)
+        const initError = await initMaxWorkspace(supabase, updated.id)
+        if (initError) {
+          console.error('[webhook/stripe] initMaxWorkspace error', initError)
+          return NextResponse.json({ error: 'Erro ao inicializar plano MAX.' }, { status: 500 })
+        }
       }
     }
+
+    return NextResponse.json({ received: true })
   }
 
   return NextResponse.json({ received: true })
 }
 
 // Inicializa workspace recém-promovido ao plano MAX:
-// cria empresa padrão e promove admins a 'master'
+// cria empresa padrão e promove admins a 'master'.
+// Retorna um erro se algo falhar, null se OK.
 async function initMaxWorkspace(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   workspaceId: string
-) {
+): Promise<Error | null> {
   try {
     // Cria empresa padrão se ainda não existe nenhuma
     const { count } = await supabase
@@ -110,20 +137,25 @@ async function initMaxWorkspace(
         .single()
 
       if (ws) {
-        await supabase.from('companies').insert({
+        const { error } = await supabase.from('companies').insert({
           workspace_id: workspaceId,
           name: ws.name,
         })
+        if (error) return error
       }
     }
 
     // Promove todos os admins a 'master'
-    await supabase
+    const { error } = await supabase
       .from('workspace_members')
       .update({ sales_role: 'master' })
       .eq('workspace_id', workspaceId)
       .eq('role', 'admin')
+
+    if (error) return error
+
+    return null
   } catch (err) {
-    console.error('[webhook/stripe] initMaxWorkspace error', err)
+    return err instanceof Error ? err : new Error(String(err))
   }
 }

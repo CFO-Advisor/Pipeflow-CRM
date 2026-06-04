@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Menu, X, Building2 } from 'lucide-react'
+import { useEffect } from 'react'
+import { X } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { UserMenu } from './UserMenu'
@@ -9,6 +9,8 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import type { Workspace } from '@/types'
 
 interface MobileSidebarProps {
+  open: boolean
+  onClose: () => void
   workspaces: Workspace[]
   currentWorkspace: Workspace
   userEmail: string
@@ -16,46 +18,26 @@ interface MobileSidebarProps {
 }
 
 export function MobileSidebar({
+  open,
+  onClose,
   workspaces,
   currentWorkspace,
   userEmail,
   userName,
 }: MobileSidebarProps) {
-  const [open, setOpen] = useState(false)
-
-  // Close on route change (navigation closes the drawer)
-  useEffect(() => {
-    const handleRouteChange = () => setOpen(false)
-    window.addEventListener('popstate', handleRouteChange)
-    return () => window.removeEventListener('popstate', handleRouteChange)
-  }, [])
-
   // Prevent body scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
   return (
     <>
-      {/* Hamburger button — only visible on mobile */}
-      <button
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-sidebar text-sidebar-foreground rounded-lg flex items-center justify-center shadow-md"
-        aria-label="Abrir menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
       {/* Backdrop */}
       {open && (
         <div
           className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
+          onClick={onClose}
         />
       )}
 
@@ -73,7 +55,7 @@ export function MobileSidebar({
             <span className="text-xl font-bold flex-1">PipeFlow</span>
             <ThemeToggle />
             <button
-              onClick={() => setOpen(false)}
+              onClick={onClose}
               className="text-muted-foreground hover:text-sidebar-foreground transition-colors p-1 rounded"
               aria-label="Fechar menu"
             >
@@ -86,7 +68,7 @@ export function MobileSidebar({
           />
         </div>
 
-        <div className="flex-1 p-4 overflow-y-auto" onClick={() => setOpen(false)}>
+        <div className="flex-1 p-4 overflow-y-auto" onClick={onClose}>
           <Sidebar />
         </div>
 

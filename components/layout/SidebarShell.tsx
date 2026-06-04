@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Users, Kanban, Settings, Building2, BarChart2, CalendarDays,
+  LayoutDashboard, Users, Kanban, Settings, Building2, BarChart2, CalendarDays, Menu,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
@@ -44,6 +44,7 @@ export function SidebarShell({
 }: SidebarShellProps) {
   const pathname = usePathname()
   const [hovered, setHovered] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <div className="flex w-full min-h-screen bg-background">
@@ -134,24 +135,46 @@ export function SidebarShell({
         </div>
       </aside>
 
-      {/* ── Mobile sidebar ── */}
+      {/* ── Mobile sidebar (drawer) ── */}
       <MobileSidebar
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
         workspaces={workspaces}
         currentWorkspace={currentWorkspace}
         userEmail={userEmail}
         userName={userName}
       />
 
-      {/* ── Main content ── */}
-      <main
-        className={cn(
-          'flex-1 min-w-0 px-4 py-6 pt-16 lg:pt-0 lg:py-6 lg:pl-3 lg:pr-6',
-          'bg-background text-foreground',
-          'lg:ml-16',
-        )}
-      >
-        {children}
-      </main>
+      {/* ── Content column (mobile top bar + page) ── */}
+      <div className="flex-1 min-w-0 flex flex-col lg:ml-16">
+
+        {/* Mobile top bar */}
+        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-sidebar text-sidebar-foreground border-b border-sidebar-border">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-sidebar-accent transition-colors"
+            aria-label="Abrir menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-sidebar-primary rounded flex items-center justify-center">
+              <span className="text-sidebar-primary-foreground text-xs font-bold">P</span>
+            </div>
+            <span className="font-semibold text-sm">PipeFlow</span>
+          </div>
+        </header>
+
+        {/* ── Main content ── */}
+        <main
+          className={cn(
+            'flex-1 min-w-0 px-4 py-6 lg:py-6 lg:pl-3 lg:pr-6',
+            'bg-background text-foreground',
+          )}
+        >
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

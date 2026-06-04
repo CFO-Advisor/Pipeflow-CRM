@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [existingUser, setExistingUser] = useState<string | null>(null)
+  const [emailSent, setEmailSent] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -74,7 +75,64 @@ export default function RegisterPage() {
       return
     }
 
-    router.push(`/login?message=Confirme+seu+e-mail+para+continuar`)
+    setEmailSent(true)
+    setLoading(false)
+  }
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-8">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">P</span>
+              </div>
+              <span className="text-xl font-bold text-foreground">PipeFlow</span>
+            </div>
+            <div className="flex items-center justify-center py-2">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+              </div>
+            </div>
+            <CardTitle className="text-2xl text-center">Confirme seu e-mail</CardTitle>
+            <CardDescription className="text-center">
+              Enviamos um link de confirmação para
+            </CardDescription>
+            <p className="text-center font-medium text-foreground text-sm">{email}</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4 text-sm text-blue-800 dark:text-blue-300 space-y-2">
+              <p className="font-medium">O que fazer agora:</p>
+              <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-400">
+                <li>Abra o e-mail que enviamos para a caixa de entrada</li>
+                <li>Clique no link <span className="font-medium">&quot;Confirmar e-mail&quot;</span></li>
+                <li>Você será redirecionado automaticamente para o sistema</li>
+              </ol>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Não recebeu? Verifique a pasta de spam ou{' '}
+              <button
+                type="button"
+                className="text-blue-600 hover:underline font-medium"
+                onClick={() => { setEmailSent(false); setError('') }}
+              >
+                tente novamente
+              </button>
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Link href="/login" className="w-full">
+              <Button variant="outline" className="w-full">
+                Já confirmei, ir para o login
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    )
   }
 
   return (

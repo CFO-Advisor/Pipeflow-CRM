@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { type EmailOtpType } from '@supabase/supabase-js'
+import { type EmailOtpType, type User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
@@ -12,22 +12,21 @@ export async function GET(request: Request) {
   const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
 
   const supabase = await createClient()
-  let sessionData: Awaited<ReturnType<typeof supabase.auth.exchangeCodeForSession>>['data'] | null = null
+  let user: User | null = null
   let sessionError: unknown = null
 
   if (code) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-    sessionData = data
+    user = data.user
     sessionError = error
   } else if (tokenHash && type) {
     // Fluxo de confirmação de e-mail (signup/email change) — usa token_hash + type
     const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
-    sessionData = data
+    user = data.user
     sessionError = error
   }
 
-  if (!sessionError && sessionData?.user) {
-    const user = sessionData.user
+  if (!sessionError && user) {
     const isEmailConfirmation = type === 'signup' || type === 'email'
 
     // Verificar se o usuário foi convidado para algum workspace

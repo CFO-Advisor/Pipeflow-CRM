@@ -12,9 +12,10 @@ import { ConversionTrendChart } from '@/components/dashboard/ConversionTrendChar
 import { MonthlyRevenueChart } from '@/components/dashboard/MonthlyRevenueChart'
 import { ActivityDistributionChart } from '@/components/dashboard/ActivityDistributionChart'
 import { PeriodSelector } from '@/components/dashboard/PeriodSelector'
+import { BUFilterSelect } from '@/components/shared/BUFilterSelect'
 import { Suspense } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import type { DealStage, DealWithLead } from '@/types'
+import type { BusinessUnit, DealStage, DealWithLead } from '@/types'
 
 const STAGE_LABELS: Record<DealStage, string> = {
   new_lead: 'Novo',
@@ -135,19 +136,26 @@ export default async function DashboardPage({
   if (companyId) prevDealsQuery = prevDealsQuery.eq('company_id', companyId)
   if (businessUnitId) prevDealsQuery = prevDealsQuery.eq('business_unit_id', businessUnitId)
 
+  const busQuery = companyId
+    ? supabase.from('business_units').select('id, workspace_id, company_id, name, active, created_at').eq('workspace_id', workspaceId).eq('company_id', companyId).eq('active', true).order('name')
+    : Promise.resolve({ data: [] })
+
   const [
     { data: leads },
     { data: deals },
     { data: activities },
     { data: openDealsRaw },
     { data: prevDeals },
+    { data: busData },
   ] = await Promise.all([
     leadsQuery,
     dealsQuery,
     activitiesQuery,
     openDealsQuery,
     prevDealsQuery,
+    busQuery,
   ])
+  const businessUnits = (busData ?? []) as BusinessUnit[]
 
   let activeCompanyName: string | null = null
   if (companyId) {
@@ -306,9 +314,16 @@ export default async function DashboardPage({
             {activeCompanyName ? `${workspace?.name} · ${activeCompanyName}` : workspace?.name}
           </p>
         </div>
-        <Suspense>
-          <PeriodSelector current={activePeriod} />
-        </Suspense>
+        <div className="flex items-center gap-2 flex-wrap">
+          <BUFilterSelect
+            businessUnits={businessUnits}
+            currentCompanyId={companyId}
+            currentBusinessUnitId={businessUnitId}
+          />
+          <Suspense>
+            <PeriodSelector current={activePeriod} />
+          </Suspense>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

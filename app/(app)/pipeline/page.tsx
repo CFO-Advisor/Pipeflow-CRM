@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/pipeline/KanbanBoard'
+import { BUFilterSelect } from '@/components/shared/BUFilterSelect'
 import { createServiceClient } from '@/lib/supabase/service'
 import type { BusinessUnit, DealWithLead } from '@/types'
 
@@ -66,11 +67,18 @@ export default async function PipelinePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Pipeline de Vendas</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Arraste os cards para mover entre etapas
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Pipeline de Vendas</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Arraste os cards para mover entre etapas
+          </p>
+        </div>
+        <BUFilterSelect
+          businessUnits={businessUnits}
+          currentCompanyId={companyId}
+          currentBusinessUnitId={businessUnitId}
+        />
       </div>
 
       <div className="-mx-4 lg:mx-0 px-4 lg:px-0">

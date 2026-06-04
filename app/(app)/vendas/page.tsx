@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { VendasClient } from '@/components/vendas/VendasClient'
-import type { Deal, Lead } from '@/types'
+import type { BusinessUnit, Deal, Lead } from '@/types'
 
 export default async function VendasPage() {
   const supabase = await createClient()
@@ -86,13 +86,21 @@ export default async function VendasPage() {
     leadsQuery = leadsQuery.eq('business_unit_id', businessUnitId)
   }
 
-  const [{ data: deals }, { data: leads }] = await Promise.all([dealsQuery, leadsQuery])
+  const busQuery = companyId
+    ? service.from('business_units').select('id, workspace_id, company_id, name, active, created_at').eq('workspace_id', workspaceId).eq('company_id', companyId).eq('active', true).order('name')
+    : Promise.resolve({ data: [] })
+
+  const [{ data: deals }, { data: leads }, { data: busData }] = await Promise.all([dealsQuery, leadsQuery, busQuery])
+  const businessUnits = (busData ?? []) as BusinessUnit[]
 
   return (
     <VendasClient
       members={members}
       deals={(deals ?? []) as Deal[]}
       leads={(leads ?? []) as Lead[]}
+      businessUnits={businessUnits}
+      currentCompanyId={companyId}
+      currentBusinessUnitId={businessUnitId}
     />
   )
 }

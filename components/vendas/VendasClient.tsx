@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
 import { RepLeaderboard } from './RepLeaderboard'
 import { RepStageBreakdown } from './RepStageBreakdown'
-import type { Deal, Lead, DealStage, SalesRole } from '@/types'
+import { BUFilterSelect } from '@/components/shared/BUFilterSelect'
+import type { BusinessUnit, Deal, Lead, DealStage, SalesRole } from '@/types'
 
 // ── Configuração de etapas ──────────────────────────────────────────
 const STAGE_ORDER: DealStage[] = [
@@ -55,6 +56,9 @@ interface VendasClientProps {
   members: Member[]
   deals: Deal[]
   leads: Lead[]
+  businessUnits?: BusinessUnit[]
+  currentCompanyId?: string | null
+  currentBusinessUnitId?: string | null
 }
 
 // ── Cálculo de métricas por rep ─────────────────────────────────────
@@ -200,7 +204,7 @@ function RepCard({ member, deals, leads }: { member: Member | null; deals: Deal[
 }
 
 // ── Componente principal ────────────────────────────────────────────
-export function VendasClient({ members, deals, leads }: VendasClientProps) {
+export function VendasClient({ members, deals, leads, businessUnits = [], currentCompanyId = null, currentBusinessUnitId = null }: VendasClientProps) {
   const hasUnassigned =
     deals.some((d) => !d.assigned_to) || leads.some((l) => !l.assigned_to)
 
@@ -216,11 +220,18 @@ export function VendasClient({ members, deals, leads }: VendasClientProps) {
   return (
     <div className="space-y-8">
       {/* Cabeçalho */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Representantes</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Desempenho individual da equipe de vendas
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Representantes</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Desempenho individual da equipe de vendas
+          </p>
+        </div>
+        <BUFilterSelect
+          businessUnits={businessUnits}
+          currentCompanyId={currentCompanyId}
+          currentBusinessUnitId={currentBusinessUnitId}
+        />
       </div>
 
       {/* Cards de resumo global */}

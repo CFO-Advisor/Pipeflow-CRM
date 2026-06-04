@@ -75,6 +75,11 @@ export default async function DashboardPage({
       ? (cookieStore.get('current_company_id')?.value ?? null)
       : null
 
+  const businessUnitId =
+    workspace?.plan === 'max'
+      ? (cookieStore.get('current_business_unit_id')?.value ?? null)
+      : null
+
   let leadsQuery = supabase
     .from('leads')
     .select('id')
@@ -107,6 +112,12 @@ export default async function DashboardPage({
     openDealsQuery = openDealsQuery.eq('company_id', companyId)
   }
 
+  if (businessUnitId) {
+    leadsQuery = leadsQuery.eq('business_unit_id', businessUnitId)
+    dealsQuery = dealsQuery.eq('business_unit_id', businessUnitId)
+    openDealsQuery = openDealsQuery.eq('business_unit_id', businessUnitId)
+  }
+
   // Dados do período anterior para deltas
   const periodDays = activePeriod === 'ytd'
     ? Math.floor((Date.now() - periodStart.getTime()) / 86400000)
@@ -122,6 +133,7 @@ export default async function DashboardPage({
     .lt('created_at', periodStart.toISOString())
 
   if (companyId) prevDealsQuery = prevDealsQuery.eq('company_id', companyId)
+  if (businessUnitId) prevDealsQuery = prevDealsQuery.eq('business_unit_id', businessUnitId)
 
   const [
     { data: leads },
@@ -191,11 +203,16 @@ export default async function DashboardPage({
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11)
   twelveMonthsAgo.setDate(1)
 
-  const { data: allDeals12m } = await supabase
+  let allDeals12mQuery = supabase
     .from('deals')
     .select('stage, created_at')
     .eq('workspace_id', workspaceId)
     .gte('created_at', twelveMonthsAgo.toISOString())
+
+  if (companyId) allDeals12mQuery = allDeals12mQuery.eq('company_id', companyId)
+  if (businessUnitId) allDeals12mQuery = allDeals12mQuery.eq('business_unit_id', businessUnitId)
+
+  const { data: allDeals12m } = await allDeals12mQuery
 
   const monthlyMap = new Map<string, { total: number; won: number }>()
   for (const d of allDeals12m ?? []) {
@@ -213,12 +230,17 @@ export default async function DashboardPage({
   }))
 
   // Dados para receita mensal (closed_won dos últimos 12m)
-  const { data: wonDeals12m } = await supabase
+  let wonDeals12mQuery = supabase
     .from('deals')
     .select('value, updated_at')
     .eq('workspace_id', workspaceId)
     .eq('stage', 'closed_won')
     .gte('updated_at', twelveMonthsAgo.toISOString())
+
+  if (companyId) wonDeals12mQuery = wonDeals12mQuery.eq('company_id', companyId)
+  if (businessUnitId) wonDeals12mQuery = wonDeals12mQuery.eq('business_unit_id', businessUnitId)
+
+  const { data: wonDeals12m } = await wonDeals12mQuery
 
   const revenueMap = new Map<string, number>()
   for (const d of wonDeals12m ?? []) {

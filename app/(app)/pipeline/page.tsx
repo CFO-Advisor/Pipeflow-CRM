@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/pipeline/KanbanBoard'
-import type { DealWithLead } from '@/types'
+import { createServiceClient } from '@/lib/supabase/service'
+import type { BusinessUnit, DealWithLead } from '@/types'
 
 export default async function PipelinePage() {
   const supabase = await createClient()
@@ -28,6 +29,11 @@ export default async function PipelinePage() {
       ? (cookieStore.get('current_company_id')?.value ?? null)
       : null
 
+  const businessUnitId =
+    workspace?.plan === 'max'
+      ? (cookieStore.get('current_business_unit_id')?.value ?? null)
+      : null
+
   let dealsQuery = supabase
     .from('deals')
     .select('*, lead:leads(id, name, company), company:companies(id, name)')
@@ -45,7 +51,18 @@ export default async function PipelinePage() {
     leadsQuery = leadsQuery.eq('company_id', companyId)
   }
 
-  const [{ data: deals }, { data: leads }] = await Promise.all([dealsQuery, leadsQuery])
+  if (businessUnitId) {
+    dealsQuery = dealsQuery.eq('business_unit_id', businessUnitId)
+    leadsQuery = leadsQuery.eq('business_unit_id', businessUnitId)
+  }
+
+  const service = createServiceClient()
+  const [{ data: deals }, { data: leads }, { data: busData }] = await Promise.all([
+    dealsQuery,
+    leadsQuery,
+    service.from('business_units').select('*').eq('workspace_id', workspaceId).eq('active', true).order('name'),
+  ])
+  const businessUnits = (busData ?? []) as BusinessUnit[]
 
   return (
     <div className="space-y-6">
@@ -62,6 +79,7 @@ export default async function PipelinePage() {
           workspaceId={workspaceId}
           leads={leads ?? []}
           companyId={companyId}
+          businessUnits={businessUnits}
         />
       </div>
     </div>

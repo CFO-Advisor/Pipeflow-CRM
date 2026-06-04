@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { SidebarShell } from '@/components/layout/SidebarShell'
-import type { Workspace, Company } from '@/types'
+import type { Workspace, Company, BusinessUnit } from '@/types'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -39,19 +39,39 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   let companies: Company[] = []
   let currentCompanyId: string | null = null
+  let businessUnits: BusinessUnit[] = []
+  let currentBusinessUnitId: string | null = null
 
+  // Carrega empresas para todos os planos
+  const { data: companiesData } = await service
+    .from('companies')
+    .select('*')
+    .eq('workspace_id', currentWorkspace.id)
+    .order('name')
+
+  companies = (companiesData ?? []) as Company[]
+
+  // Carrega unidades de negócio para todos os planos
+  const { data: busData } = await service
+    .from('business_units')
+    .select('*')
+    .eq('workspace_id', currentWorkspace.id)
+    .eq('active', true)
+    .order('name')
+
+  businessUnits = (busData ?? []) as BusinessUnit[]
+
+  // CompanySwitcher (filtragem por empresa) permanece exclusivo do plano MAX
   if (currentWorkspace.plan === 'max') {
-    const { data: companiesData } = await service
-      .from('companies')
-      .select('*')
-      .eq('workspace_id', currentWorkspace.id)
-      .order('name')
-
-    companies = (companiesData ?? []) as Company[]
     currentCompanyId = cookieStore.get('current_company_id')?.value ?? null
-
     if (currentCompanyId && !companies.find((c) => c.id === currentCompanyId)) {
       currentCompanyId = null
+    }
+
+    // BusinessUnitSwitcher também exclusivo do plano MAX
+    currentBusinessUnitId = cookieStore.get('current_business_unit_id')?.value ?? null
+    if (currentBusinessUnitId && !businessUnits.find((bu) => bu.id === currentBusinessUnitId)) {
+      currentBusinessUnitId = null
     }
   }
 
@@ -63,7 +83,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       workspaces={workspaces}
       currentWorkspace={currentWorkspace}
       companies={companies}
+      businessUnits={businessUnits}
       currentCompanyId={currentCompanyId}
+      currentBusinessUnitId={currentBusinessUnitId}
       userEmail={userEmail}
       userName={userName}
     >

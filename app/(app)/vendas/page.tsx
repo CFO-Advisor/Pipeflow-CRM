@@ -30,6 +30,11 @@ export default async function VendasPage() {
       ? (cookieStore.get('current_company_id')?.value ?? null)
       : null
 
+  const businessUnitId =
+    workspace?.plan === 'max'
+      ? (cookieStore.get('current_business_unit_id')?.value ?? null)
+      : null
+
   // Membros do workspace
   const { data: memberRows } = await service
     .from('workspace_members')
@@ -74,6 +79,11 @@ export default async function VendasPage() {
   if (companyId) {
     dealsQuery = dealsQuery.eq('company_id', companyId)
     leadsQuery = leadsQuery.eq('company_id', companyId)
+  }
+
+  if (businessUnitId) {
+    dealsQuery = dealsQuery.eq('business_unit_id', businessUnitId)
+    leadsQuery = leadsQuery.eq('business_unit_id', businessUnitId)
   }
 
   const [{ data: deals }, { data: leads }] = await Promise.all([dealsQuery, leadsQuery])

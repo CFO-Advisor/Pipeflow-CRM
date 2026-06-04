@@ -9,17 +9,20 @@ import {
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { CompanySwitcher } from './CompanySwitcher'
+import { BusinessUnitSwitcher } from './BusinessUnitSwitcher'
 import { UserMenu } from './UserMenu'
 import { MobileSidebar } from './MobileSidebar'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import type { Workspace, Company } from '@/types'
+import type { Workspace, Company, BusinessUnit } from '@/types'
 
 interface SidebarShellProps {
   children: React.ReactNode
   workspaces: Workspace[]
   currentWorkspace: Workspace
   companies: Company[]
+  businessUnits: BusinessUnit[]
   currentCompanyId: string | null
+  currentBusinessUnitId: string | null
   userEmail: string
   userName?: string
 }
@@ -38,7 +41,9 @@ export function SidebarShell({
   workspaces,
   currentWorkspace,
   companies,
+  businessUnits,
   currentCompanyId,
+  currentBusinessUnitId,
   userEmail,
   userName,
 }: SidebarShellProps) {
@@ -86,6 +91,16 @@ export function SidebarShell({
               {currentWorkspace.plan === 'max' && companies.length > 0 && (
                 <div className="mt-1">
                   <CompanySwitcher companies={companies} currentCompanyId={currentCompanyId} />
+                </div>
+              )}
+              {currentWorkspace.plan === 'max' && currentCompanyId && businessUnits.filter(bu => bu.company_id === currentCompanyId && bu.active).length > 0 && (
+                <div className="mt-1">
+                  <BusinessUnitSwitcher
+                    companies={companies}
+                    businessUnits={businessUnits}
+                    currentCompanyId={currentCompanyId}
+                    currentBusinessUnitId={currentBusinessUnitId}
+                  />
                 </div>
               )}
             </>

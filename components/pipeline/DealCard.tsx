@@ -15,7 +15,7 @@ import type { DealStage, DealWithLead } from '@/types'
 
 // Borda lateral que indica a "temperatura" do negócio — mais quente = mais próximo de fechar
 const stageAccent: Record<DealStage, string> = {
-  new_lead: 'border-l-blue-400',
+  new_lead: 'border-l-teal-400',
   contacted: 'border-l-cyan-500',
   proposal_sent: 'border-l-violet-500',
   negotiation: 'border-l-amber-500',

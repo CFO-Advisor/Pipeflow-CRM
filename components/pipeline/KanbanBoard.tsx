@@ -14,16 +14,8 @@ import {
 import { KanbanColumn } from './KanbanColumn'
 import { DealCard } from './DealCard'
 import { updateDealStage } from '@/app/actions/deals'
+import { STAGE_ORDER as STAGES } from '@/lib/deal-stages'
 import type { DealStage, DealWithLead, Lead } from '@/types'
-
-const STAGES: DealStage[] = [
-  'new_lead',
-  'contacted',
-  'proposal_sent',
-  'negotiation',
-  'closed_won',
-  'closed_lost',
-]
 
 interface KanbanBoardProps {
   deals: DealWithLead[]

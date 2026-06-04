@@ -158,7 +158,7 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
                     onValueChange={(v) => { if (v) setSalesRole(v as SalesRole) }}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue />
+                      <SelectValue>{SALES_ROLE_LABELS[salesRole]}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {(Object.entries(SALES_ROLE_LABELS) as [SalesRole, string][]).map(([v, l]) => (
@@ -174,7 +174,12 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
                     onValueChange={(v) => setManagerId(v ?? 'none')}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Sem superior" />
+                      <SelectValue placeholder="Sem superior">
+                        {managerId === 'none'
+                          ? 'Sem superior'
+                          : (eligibleManagers.find(m => m.id === managerId)?.name
+                              ?? eligibleManagers.find(m => m.id === managerId)?.email)}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Sem superior</SelectItem>
@@ -256,7 +261,9 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
                             onValueChange={(v) => { if (v) updatePerm(r, 'data_scope', v as DataScope) }}
                           >
                             <SelectTrigger size="sm" className="w-28">
-                              <SelectValue />
+                              <SelectValue>
+                                {SCOPE_OPTIONS.find(o => o.value === permissions[r].data_scope)?.label}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               {SCOPE_OPTIONS.map((o) => (

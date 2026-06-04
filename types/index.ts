@@ -10,7 +10,7 @@ export type DealStage =
   | 'negotiation'
   | 'closed_won'
   | 'closed_lost'
-export type ActivityType = 'call' | 'email' | 'meeting' | 'note' | 'proposal'
+export type ActivityType = 'call' | 'email' | 'meeting' | 'note' | 'proposal' | 'whatsapp'
 export type AttachmentCategory = 'proposta' | 'cotacao' | 'apresentacao'
 
 export interface Workspace {

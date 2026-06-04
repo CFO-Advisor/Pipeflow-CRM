@@ -21,6 +21,9 @@ interface ActivityFormProps {
   leadId: string
   workspaceId: string
   userId: string
+  leadEmail?: string | null
+  leadPhone?: string | null
+  leadName?: string
 }
 
 const activityLabels: Record<ActivityType, string> = {
@@ -29,6 +32,7 @@ const activityLabels: Record<ActivityType, string> = {
   meeting:  'Reunião',
   note:     'Nota',
   proposal: 'Envio de Proposta',
+  whatsapp: 'WhatsApp',
 }
 
 const ACCEPT_PROPOSAL = '.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx'
@@ -39,13 +43,28 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps) {
+function buildWhatsAppUrl(phone: string, text: string): string {
+  const digits = phone.replace(/\D/g, '')
+  // Adiciona código do Brasil se não tiver DDI
+  const number = digits.startsWith('55') ? digits : `55${digits}`
+  return `https://wa.me/${number}?text=${encodeURIComponent(text)}`
+}
+
+export function ActivityForm({
+  leadId,
+  workspaceId,
+  userId,
+  leadEmail,
+  leadPhone,
+  leadName,
+}: ActivityFormProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [type, setType] = useState<ActivityType>('note')
   const [description, setDescription] = useState('')
-  const [scheduledAt, setScheduledAt] = useState('')
+  const [emailSubject, setEmailSubject] = useState('')
+  const [scheduledAt, setScheduledAt] = useState(() => new Date().toISOString().slice(0, 10))
   const [proposalFile, setProposalFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -72,6 +91,10 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!description.trim()) return
+    if (!scheduledAt) {
+      setError('Informe a data da atividade.')
+      return
+    }
     if (type === 'proposal' && !proposalFile) {
       setError('Anexe o arquivo da proposta.')
       return
@@ -81,7 +104,7 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
     setError('')
     const supabase = createClient()
 
-    // 1. Inserir atividade e obter o ID gerado
+    // 1. Inserir atividade
     const { data: newActivity, error: insertErr } = await supabase
       .from('activities')
       .insert({
@@ -101,7 +124,7 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
       return
     }
 
-    // 2. Upload do arquivo de proposta (se houver)
+    // 2. Upload da proposta (se houver)
     if (type === 'proposal' && proposalFile) {
       const ext = proposalFile.name.split('.').pop()
       const filePath = `${workspaceId}/atividades/${newActivity.id}.${ext}`
@@ -121,18 +144,27 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
         .from('deal-attachments')
         .getPublicUrl(filePath)
 
-      // 3. Atualizar atividade com URL e nome do arquivo
       await supabase
         .from('activities')
-        .update({
-          attachment_url: urlData.publicUrl,
-          attachment_name: proposalFile.name,
-        })
+        .update({ attachment_url: urlData.publicUrl, attachment_name: proposalFile.name })
         .eq('id', newActivity.id)
     }
 
+    // 3. Abrir cliente de e-mail (Outlook) com destinatário, assunto e corpo preenchidos
+    if (type === 'email' && leadEmail) {
+      const subject = emailSubject.trim() || `Mensagem para ${leadName ?? leadEmail}`
+      const mailto = `mailto:${encodeURIComponent(leadEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(description.trim())}`
+      window.open(mailto, '_blank')
+    }
+
+    // 4. Abrir WhatsApp
+    if (type === 'whatsapp' && leadPhone) {
+      window.open(buildWhatsAppUrl(leadPhone, description.trim()), '_blank', 'noopener,noreferrer')
+    }
+
     setDescription('')
-    setScheduledAt('')
+    setEmailSubject('')
+    setScheduledAt(new Date().toISOString().slice(0, 10))
     setProposalFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
     router.refresh()
@@ -153,7 +185,7 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
           <Label className="mb-1.5 block">Tipo</Label>
           <Select value={type} onValueChange={handleTypeChange}>
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue />
+              <SelectValue>{activityLabels[type]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {(Object.entries(activityLabels) as [ActivityType, string][]).map(([value, label]) => (
@@ -163,10 +195,10 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
           </Select>
         </div>
 
-        {/* Data agendada */}
+        {/* Data da atividade */}
         <div>
           <Label htmlFor="scheduled_at" className="mb-1.5 block">
-            Data agendada <span className="text-muted-foreground font-normal">(opcional)</span>
+            Data da atividade <span className="text-destructive">*</span>
           </Label>
           <Input
             id="scheduled_at"
@@ -174,11 +206,41 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
             className="w-44"
+            required
           />
         </div>
       </div>
 
-      {/* Upload de proposta — só aparece quando tipo = proposal */}
+      {/* Aviso: sem e-mail cadastrado */}
+      {type === 'email' && !leadEmail && (
+        <div className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+          Este lead não tem e-mail cadastrado. A atividade será registrada, mas o e-mail não será enviado.
+        </div>
+      )}
+
+      {/* Assunto do e-mail */}
+      {type === 'email' && leadEmail && (
+        <div className="space-y-1">
+          <Label htmlFor="email_subject">
+            Assunto <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
+          </Label>
+          <Input
+            id="email_subject"
+            value={emailSubject}
+            onChange={(e) => setEmailSubject(e.target.value)}
+            placeholder={`Mensagem para ${leadName ?? leadEmail}`}
+          />
+        </div>
+      )}
+
+      {/* Aviso: sem telefone cadastrado */}
+      {type === 'whatsapp' && !leadPhone && (
+        <div className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+          Este lead não tem telefone cadastrado. A atividade será registrada, mas o WhatsApp não será aberto.
+        </div>
+      )}
+
+      {/* Upload de proposta */}
       {type === 'proposal' && (
         <div className="space-y-1.5">
           <Label>
@@ -224,7 +286,7 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
       {/* Descrição */}
       <div className="space-y-1">
         <Label htmlFor="description">
-          {type === 'proposal' ? 'Observações' : 'Descrição'}
+          {type === 'proposal' ? 'Observações' : type === 'whatsapp' ? 'Mensagem' : 'Descrição'}
         </Label>
         <Textarea
           id="description"
@@ -233,6 +295,10 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
           placeholder={
             type === 'proposal'
               ? 'Detalhes sobre a proposta enviada...'
+              : type === 'whatsapp'
+              ? 'Digite a mensagem que será enviada pelo WhatsApp...'
+              : type === 'email'
+              ? 'Corpo do e-mail a ser enviado...'
               : 'Descreva a atividade...'
           }
           rows={3}
@@ -241,10 +307,12 @@ export function ActivityForm({ leadId, workspaceId, userId }: ActivityFormProps)
       </div>
 
       <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
-        {loading
-          ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Registrando...</>
-          : type === 'proposal' ? 'Registrar envio de proposta' : 'Registrar atividade'
-        }
+        {loading ? (
+          <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Registrando...</>
+        ) : type === 'proposal' ? 'Registrar envio de proposta'
+          : type === 'email' && leadEmail ? 'Registrar e abrir Outlook'
+          : type === 'whatsapp' && leadPhone ? 'Registrar e abrir WhatsApp'
+          : 'Registrar atividade'}
       </Button>
     </form>
   )

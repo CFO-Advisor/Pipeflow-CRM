@@ -9,6 +9,7 @@ import {
   YAxis,
   Cell,
   Tooltip,
+  LabelList,
   ResponsiveContainer,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
@@ -16,7 +17,9 @@ import { formatCurrency } from '@/lib/utils'
 export interface RepMetric {
   name: string
   pipelineValue: number
+  openDeals: number
   wonDeals: number
+  wonValue: number
   conversionRate: number
 }
 
@@ -109,6 +112,37 @@ export function RepLeaderboard({ reps }: RepLeaderboardProps) {
             cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}
           />
           <Bar dataKey={metric} radius={[0, 4, 4, 0]} isAnimationActive animationDuration={600} label={{ position: 'right', fontSize: 10, fill: tickColor, formatter: (v: unknown) => formatValue(Number(v) || 0) }}>
+            <LabelList
+              dataKey={metric}
+              position="insideLeft"
+              content={(props) => {
+                const { x, y, width, height, index } = props as { x: number; y: number; width: number; height: number; index: number }
+                const entry = sorted[index]
+                if (!entry || (width as number) < 120) return null
+                let label: string
+                if (metric === 'pipelineValue') {
+                  const n = entry.openDeals
+                  label = `${n} negócio${n !== 1 ? 's' : ''} · ${formatCurrency(entry.pipelineValue)}`
+                } else if (metric === 'wonDeals') {
+                  const n = entry.wonDeals
+                  label = `${n} negócio${n !== 1 ? 's' : ''} · ${formatCurrency(entry.wonValue)}`
+                } else {
+                  label = `${entry.wonDeals} ganho${entry.wonDeals !== 1 ? 's' : ''} / ${entry.wonDeals + entry.openDeals} total`
+                }
+                return (
+                  <text
+                    x={(x as number) + 8}
+                    y={(y as number) + (height as number) / 2}
+                    dominantBaseline="middle"
+                    fill="rgba(255,255,255,0.9)"
+                    fontSize={11}
+                    fontWeight={500}
+                  >
+                    {label}
+                  </text>
+                )
+              }}
+            />
             {sorted.map((entry) => (
               <Cell
                 key={entry.name}

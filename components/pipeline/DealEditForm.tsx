@@ -41,6 +41,7 @@ export function DealEditForm({ open, onOpenChange, deal }: DealEditFormProps) {
     setLoading(true)
     setError('')
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
     const { error: err } = await supabase
       .from('deals')
@@ -48,6 +49,8 @@ export function DealEditForm({ open, onOpenChange, deal }: DealEditFormProps) {
         title: form.title,
         value: parseFloat(form.value) || 0,
         deadline: form.deadline || null,
+        // Se o negócio não tem responsável, atribui a quem está editando (fix retroativo)
+        assigned_to: deal.assigned_to ?? user?.id ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', deal.id)

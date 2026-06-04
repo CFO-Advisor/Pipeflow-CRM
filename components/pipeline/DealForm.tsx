@@ -54,6 +54,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
     setLoading(true)
     setError('')
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
     const { error: err } = await supabase.from('deals').insert({
       workspace_id: workspaceId,
@@ -62,6 +63,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
       value: parseFloat(form.value) || 0,
       stage: defaultStage,
       deadline: form.deadline || undefined,
+      assigned_to: user?.id ?? null,
       ...(companyId ? { company_id: companyId } : {}),
     })
 
@@ -90,7 +92,9 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
             <Label>Lead *</Label>
             <Select value={form.lead_id} onValueChange={(v) => update('lead_id', v ?? '')}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um lead" />
+                <SelectValue placeholder="Selecione um lead">
+                  {form.lead_id ? leads.find(l => l.id === form.lead_id)?.name : null}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {leads.map((lead) => (

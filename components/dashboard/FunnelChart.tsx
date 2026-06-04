@@ -18,7 +18,7 @@ interface FunnelChartProps {
 }
 
 const stageColors: Record<DealStage, string> = {
-  new_lead: '#3b82f6',
+  new_lead: '#0d9488',
   contacted: '#60a5fa',
   proposal_sent: '#818cf8',
   negotiation: '#a78bfa',

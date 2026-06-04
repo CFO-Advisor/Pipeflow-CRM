@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, Phone, Mail, Users, FileText, CalendarDays, Target } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Phone, Mail, Users, FileText, CalendarDays, Target, Send, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { CompanySwitcher } from '@/components/layout/CompanySwitcher'
+import type { Company } from '@/types'
 
 // ── Tipos ────────────────────────────────────────────────────────────
-type EventType = 'call' | 'email' | 'meeting' | 'note' | 'deadline'
+type EventType = 'call' | 'email' | 'meeting' | 'note' | 'proposal' | 'whatsapp' | 'deadline'
 
 interface CalendarEvent {
   id: string
@@ -29,6 +31,9 @@ interface Props {
   workspaceId: string
   members: Member[]
   currentUserId: string
+  isMax?: boolean
+  companies?: Company[]
+  currentCompanyId?: string | null
 }
 
 // ── Configurações visuais ────────────────────────────────────────────
@@ -37,6 +42,8 @@ const EVENT_CONFIG: Record<EventType, { label: string; icon: React.ElementType; 
   email:    { label: 'E-mail',    icon: Mail,        pill: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',     dot: 'bg-green-500' },
   meeting:  { label: 'Reunião',   icon: Users,       pill: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300', dot: 'bg-violet-500' },
   note:     { label: 'Nota',      icon: FileText,    pill: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',       dot: 'bg-slate-400' },
+  proposal:  { label: 'Proposta',  icon: Send,          pill: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',       dot: 'bg-green-500' },
+  whatsapp:  { label: 'WhatsApp',  icon: MessageCircle, pill: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300', dot: 'bg-emerald-500' },
   deadline: { label: 'Prazo',     icon: Target,      pill: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',           dot: 'bg-red-500' },
 }
 
@@ -57,7 +64,7 @@ function getMemberDisplay(m: Member): string {
 }
 
 // ── Componente principal ─────────────────────────────────────────────
-export function CalendarioClient({ workspaceId, members, currentUserId }: Props) {
+export function CalendarioClient({ workspaceId, members, currentUserId, isMax = false, companies = [], currentCompanyId = null }: Props) {
   const today = new Date()
   const [year, setYear]               = useState(today.getFullYear())
   const [month, setMonth]             = useState(today.getMonth())
@@ -80,37 +87,45 @@ export function CalendarioClient({ workspaceId, members, currentUserId }: Props)
     const from = localYMD(firstDay)
     const to   = localYMD(lastDay)
 
-    const [{ data: activities }, { data: deals }] = await Promise.all([
-      supabase
-        .from('activities')
-        .select('id, type, description, scheduled_at, author_id, lead:leads(name)')
-        .eq('workspace_id', workspaceId)
-        .not('scheduled_at', 'is', null)
-        .gte('scheduled_at', from)
-        .lte('scheduled_at', to),
+    let activitiesQuery = supabase
+      .from('activities')
+      .select('id, type, description, scheduled_at, author_id, lead:leads(name, company_id)')
+      .eq('workspace_id', workspaceId)
+      .not('scheduled_at', 'is', null)
+      .gte('scheduled_at', from)
+      .lte('scheduled_at', to)
 
-      supabase
-        .from('deals')
-        .select('id, title, deadline, assigned_to')
-        .eq('workspace_id', workspaceId)
-        .not('deadline', 'is', null)
-        .gte('deadline', from)
-        .lte('deadline', to),
+    let dealsQuery = supabase
+      .from('deals')
+      .select('id, title, deadline, assigned_to')
+      .eq('workspace_id', workspaceId)
+      .not('deadline', 'is', null)
+      .gte('deadline', from)
+      .lte('deadline', to)
+
+    if (currentCompanyId) {
+      dealsQuery = dealsQuery.eq('company_id', currentCompanyId)
+    }
+
+    const [{ data: activities }, { data: deals }] = await Promise.all([
+      activitiesQuery,
+      dealsQuery,
     ])
 
-    const activityEvents: CalendarEvent[] = (activities ?? []).map((a: any) => {
-      // author_id → auth.users.id
-      const member = a.author_id ? memberByUserId.get(a.author_id) : null
-      return {
-        id: a.id,
-        date: a.scheduled_at as string,
-        type: a.type as EventType,
-        title: a.lead?.name ?? 'Lead',
-        description: a.description,
-        userId: a.author_id ?? null,
-        memberName: member ? getMemberDisplay(member) : undefined,
-      }
-    })
+    const activityEvents: CalendarEvent[] = (activities ?? [])
+      .filter((a: any) => !currentCompanyId || a.lead?.company_id === currentCompanyId)
+      .map((a: any) => {
+        const member = a.author_id ? memberByUserId.get(a.author_id) : null
+        return {
+          id: a.id,
+          date: a.scheduled_at as string,
+          type: a.type as EventType,
+          title: a.lead?.name ?? 'Lead',
+          description: a.description,
+          userId: a.author_id ?? null,
+          memberName: member ? getMemberDisplay(member) : undefined,
+        }
+      })
 
     const deadlineEvents: CalendarEvent[] = (deals ?? []).map((d: any) => {
       // assigned_to → auth.users.id
@@ -128,7 +143,7 @@ export function CalendarioClient({ workspaceId, members, currentUserId }: Props)
     setEvents([...activityEvents, ...deadlineEvents])
     setLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year, month, workspaceId])
+  }, [year, month, workspaceId, currentCompanyId])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
@@ -178,6 +193,16 @@ export function CalendarioClient({ workspaceId, members, currentUserId }: Props)
         <h1 className="text-3xl font-bold text-foreground tracking-tight">Calendário</h1>
         <p className="text-muted-foreground text-sm mt-1">Agenda e prazos da equipe de vendas</p>
       </div>
+
+      {/* Seletor de empresa — plano MAX */}
+      {isMax && companies.length > 0 && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Empresa:</span>
+          <div className="w-56">
+            <CompanySwitcher companies={companies} currentCompanyId={currentCompanyId} />
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col xl:flex-row gap-6">
         {/* ── Calendário principal ── */}

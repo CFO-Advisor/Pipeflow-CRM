@@ -103,6 +103,7 @@ export function LeadForm({
     setLoading(true)
     setError('')
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
     const payload = {
       ...form,
@@ -122,7 +123,7 @@ export function LeadForm({
     } else {
       const { data: newLead, error: err } = await supabase
         .from('leads')
-        .insert({ ...payload, workspace_id: workspaceId })
+        .insert({ ...payload, workspace_id: workspaceId, assigned_to: user?.id ?? null })
         .select('id')
         .single()
       if (err || !newLead) { setError(err?.message ?? 'Erro ao criar lead'); setLoading(false); return }

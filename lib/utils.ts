@@ -22,6 +22,12 @@ export function formatCurrency(value: number): string {
 }
 
 export function formatDate(dateStr: string): string {
+  // Strings sem horário (YYYY-MM-DD) devem ser interpretadas como data local,
+  // não como UTC meia-noite (o que causaria shift de -3h no Brasil).
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    return new Intl.DateTimeFormat('pt-BR').format(new Date(year, month - 1, day))
+  }
   return new Intl.DateTimeFormat('pt-BR').format(new Date(dateStr))
 }
 

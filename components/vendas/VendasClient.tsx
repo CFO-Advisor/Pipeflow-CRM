@@ -14,7 +14,7 @@ const STAGE_ORDER: DealStage[] = [
 ]
 
 const STAGE_STYLE: Record<DealStage, { label: string; bar: string; text: string }> = {
-  new_lead:      { label: 'Novo Lead',   bar: 'bg-blue-500',   text: 'text-blue-500' },
+  new_lead:      { label: 'Novo Lead',   bar: 'bg-teal-500',   text: 'text-teal-500' },
   contacted:     { label: 'Contato',     bar: 'bg-cyan-500',   text: 'text-cyan-500' },
   proposal_sent: { label: 'Proposta',    bar: 'bg-indigo-500', text: 'text-indigo-500' },
   negotiation:   { label: 'Negociação',  bar: 'bg-amber-500',  text: 'text-amber-500' },
@@ -71,6 +71,7 @@ function calcMetrics(userId: string | null, deals: Deal[], leads: Lead[]) {
   )
   const wonDeals = repDeals.filter((d) => d.stage === 'closed_won')
   const pipelineValue = openDeals.reduce((s, d) => s + (d.value ?? 0), 0)
+  const wonValue = wonDeals.reduce((s, d) => s + (d.value ?? 0), 0)
   const conversionRate = repDeals.length
     ? Math.round((wonDeals.length / repDeals.length) * 100)
     : 0
@@ -78,7 +79,7 @@ function calcMetrics(userId: string | null, deals: Deal[], leads: Lead[]) {
     STAGE_ORDER.map((s) => [s, repDeals.filter((d) => d.stage === s).length])
   ) as Record<DealStage, number>
 
-  return { repDeals, repLeads, openDeals, wonDeals, pipelineValue, conversionRate, byStage }
+  return { repDeals, repLeads, openDeals, wonDeals, pipelineValue, wonValue, conversionRate, byStage }
 }
 
 function initials(name?: string, email?: string): string {
@@ -278,11 +279,13 @@ export function VendasClient({ members, deals, leads }: VendasClientProps) {
                 reps={members
                   .filter((m) => m.user_id)
                   .map((m) => {
-                    const { pipelineValue, wonDeals, conversionRate } = calcMetrics(m.user_id, deals, leads)
+                    const { pipelineValue, openDeals, wonDeals, wonValue, conversionRate } = calcMetrics(m.user_id, deals, leads)
                     return {
                       name: m.name ?? m.email.split('@')[0],
                       pipelineValue,
+                      openDeals: openDeals.length,
                       wonDeals: wonDeals.length,
+                      wonValue,
                       conversionRate,
                     }
                   })}

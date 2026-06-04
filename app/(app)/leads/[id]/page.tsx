@@ -3,13 +3,15 @@ import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft, Building2, Mail, Phone, Briefcase } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ActivityTimeline } from '@/components/leads/ActivityTimeline'
 import { ActivityForm } from '@/components/leads/ActivityForm'
+import { LeadDealPanel } from '@/components/leads/LeadDealPanel'
 import { formatDate } from '@/lib/utils'
-import type { ActivityWithAuthor } from '@/types'
+import type { ActivityWithAuthor, Deal } from '@/types'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -27,7 +29,7 @@ export default async function LeadDetailPage({ params }: Props) {
   const cookieStore = await cookies()
   const workspaceId = cookieStore.get('current_workspace_id')?.value
 
-  const [{ data: lead }, { data: rawActivities }] = await Promise.all([
+  const [{ data: lead }, { data: rawActivities }, { data: rawDeals }] = await Promise.all([
     supabase
       .from('leads')
       .select('*')
@@ -38,12 +40,43 @@ export default async function LeadDetailPage({ params }: Props) {
       .from('activities')
       .select('*')
       .eq('lead_id', id)
+      .order('scheduled_at', { ascending: false, nullsFirst: false }),
+    supabase
+      .from('deals')
+      .select('*')
+      .eq('lead_id', id)
+      .eq('workspace_id', workspaceId ?? '')
       .order('created_at', { ascending: false }),
   ])
 
   if (!lead) notFound()
 
-  const activities = (rawActivities ?? []) as ActivityWithAuthor[]
+  // Enriquecer atividades com dados do autor via admin API
+  const rawActList = rawActivities ?? []
+  const authorIds = [...new Set(rawActList.map((a: any) => a.author_id).filter(Boolean))]
+  let authorMap = new Map<string, { email: string; name?: string }>()
+
+  if (authorIds.length > 0) {
+    const service = createServiceClient()
+    const { data: authData } = await service.auth.admin.listUsers({ perPage: 1000 })
+    authorMap = new Map(
+      (authData?.users ?? [])
+        .filter(u => authorIds.includes(u.id))
+        .map(u => [u.id, { email: u.email ?? '', name: u.user_metadata?.full_name as string | undefined }])
+    )
+  }
+
+  const activities: ActivityWithAuthor[] = rawActList.map((a: any) => {
+    const info = a.author_id ? authorMap.get(a.author_id) : undefined
+    return {
+      ...a,
+      author: info
+        ? { id: a.author_id, email: info.email, user_metadata: { full_name: info.name } }
+        : null,
+    }
+  })
+
+  const deals = (rawDeals ?? []) as Deal[]
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -110,6 +143,20 @@ export default async function LeadDetailPage({ params }: Props) {
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-base">Negócios</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LeadDealPanel
+            leadId={lead.id}
+            workspaceId={workspaceId ?? lead.workspace_id}
+            companyId={lead.company_id}
+            deals={deals}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-base">Registrar atividade</CardTitle>
         </CardHeader>
         <CardContent>
@@ -117,6 +164,9 @@ export default async function LeadDetailPage({ params }: Props) {
             leadId={lead.id}
             workspaceId={workspaceId ?? lead.workspace_id}
             userId={user.id}
+            leadEmail={lead.email}
+            leadPhone={lead.phone}
+            leadName={lead.name}
           />
         </CardContent>
       </Card>
@@ -131,7 +181,7 @@ export default async function LeadDetailPage({ params }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ActivityTimeline activities={activities} />
+          <ActivityTimeline activities={activities} leadId={id} />
         </CardContent>
       </Card>
     </div>

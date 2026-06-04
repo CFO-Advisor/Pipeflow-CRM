@@ -1,5 +1,6 @@
-import { Phone, Mail, Users, FileText, Send, Download } from 'lucide-react'
-import { formatRelativeDate } from '@/lib/utils'
+import { Phone, Mail, Users, FileText, Send, Download, Calendar, MessageCircle } from 'lucide-react'
+import { formatDate, formatRelativeDate } from '@/lib/utils'
+import { DeleteActivityButton } from './DeleteActivityButton'
 import type { ActivityType, ActivityWithAuthor } from '@/types'
 
 const activityConfig: Record<ActivityType, {
@@ -11,14 +12,16 @@ const activityConfig: Record<ActivityType, {
   email:    { icon: Mail,      label: 'E-mail',             color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
   meeting:  { icon: Users,     label: 'Reunião',            color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
   note:     { icon: FileText,  label: 'Nota',               color: 'bg-muted text-muted-foreground' },
-  proposal: { icon: Send,      label: 'Envio de Proposta',  color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
+  proposal:  { icon: Send,          label: 'Envio de Proposta', color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
+  whatsapp:  { icon: MessageCircle, label: 'WhatsApp',          color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' },
 }
 
 interface ActivityTimelineProps {
   activities: ActivityWithAuthor[]
+  leadId: string
 }
 
-export function ActivityTimeline({ activities }: ActivityTimelineProps) {
+export function ActivityTimeline({ activities, leadId }: ActivityTimelineProps) {
   if (activities.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-8">
@@ -48,9 +51,17 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-semibold text-foreground">{config.label}</span>
                 <span className="text-xs text-muted-foreground">por {authorName}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {formatRelativeDate(activity.created_at)}
-                </span>
+                <div className="ml-auto flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1" title="Data do registro">
+                    <Calendar className="w-3 h-3 opacity-50" />
+                    <span className="opacity-60">Reg.:</span> {formatDate(activity.created_at)}
+                  </span>
+                  <span className="text-xs text-foreground/80 flex items-center gap-1 font-medium" title="Data da atividade">
+                    <Calendar className="w-3 h-3" />
+                    {activity.scheduled_at ? formatDate(activity.scheduled_at) : '—'}
+                  </span>
+                  <DeleteActivityButton activityId={activity.id} leadId={leadId} />
+                </div>
               </div>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 {activity.description}

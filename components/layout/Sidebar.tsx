@@ -2,14 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Kanban, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, Kanban, BarChart2, CalendarDays, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/leads', label: 'Leads', icon: Users },
-  { href: '/pipeline', label: 'Pipeline', icon: Kanban },
-  { href: '/settings', label: 'Configurações', icon: Settings },
+  { href: '/dashboard',  label: 'Dashboard',     icon: LayoutDashboard },
+  { href: '/leads',      label: 'Leads',         icon: Users },
+  { href: '/pipeline',   label: 'Pipeline',      icon: Kanban },
+  { href: '/vendas',     label: 'Performance',   icon: BarChart2 },
+  { href: '/calendario', label: 'Calendário',    icon: CalendarDays },
+  { href: '/settings',   label: 'Configurações', icon: Settings },
 ]
 
 export function Sidebar() {

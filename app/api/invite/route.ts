@@ -69,24 +69,31 @@ export async function POST(req: NextRequest) {
 
   const safeName = escapeHtml(workspace?.name ?? 'um workspace')
 
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), 8000)
+  )
+
   try {
-    await resend.emails.send({
-      from: 'PipeFlow <noreply@pipeflow.app>',
-      to: email,
-      subject: `Você foi convidado para ${safeName} no PipeFlow`,
-      html: `
-        <h2>Você foi convidado!</h2>
-        <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
-        <p>Clique no botão abaixo para criar sua conta e entrar automaticamente no workspace:</p>
-        <p>
-          <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
-            Aceitar convite e criar conta
-          </a>
-        </p>
-        <p>Caso já tenha uma conta, <a href="${appUrl}/login">faça login</a> — o convite será aceito automaticamente.</p>
-        <p style="color:#94a3b8;font-size:12px">Se você não esperava este convite, pode ignorar este e-mail.</p>
-      `,
-    })
+    await Promise.race([
+      resend.emails.send({
+        from: 'PipeFlow <noreply@pipeflow.app>',
+        to: email,
+        subject: `Você foi convidado para ${safeName} no PipeFlow`,
+        html: `
+          <h2>Você foi convidado!</h2>
+          <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
+          <p>Clique no botão abaixo para criar sua conta e entrar automaticamente no workspace:</p>
+          <p>
+            <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
+              Aceitar convite e criar conta
+            </a>
+          </p>
+          <p>Caso já tenha uma conta, <a href="${appUrl}/login">faça login</a> — o convite será aceito automaticamente.</p>
+          <p style="color:#94a3b8;font-size:12px">Se você não esperava este convite, pode ignorar este e-mail.</p>
+        `,
+      }),
+      timeout,
+    ])
   } catch (err) {
     console.error('[invite] Resend error', err)
     return NextResponse.json({ success: true, warning: 'Convite salvo, mas e-mail não enviado.' })

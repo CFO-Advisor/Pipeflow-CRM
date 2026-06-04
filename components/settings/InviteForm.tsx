@@ -23,23 +23,32 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
     setLoading(true)
     setMessage(null)
 
-    const res = await fetch('/api/invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, workspaceId }),
-    })
+    try {
+      const res = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, workspaceId }),
+      })
 
-    const data = await res.json()
+      let data: Record<string, string> = {}
+      try {
+        data = await res.json()
+      } catch {
+        // resposta não-JSON (ex: timeout 504 do Vercel)
+      }
 
-    if (!res.ok) {
-      setMessage({ type: 'error', text: data.error ?? 'Erro ao enviar convite.' })
-    } else {
-      setMessage({ type: 'success', text: `Convite enviado para ${email}` })
-      setEmail('')
-      router.refresh()
+      if (!res.ok) {
+        setMessage({ type: 'error', text: data.error ?? 'Erro ao enviar convite.' })
+      } else {
+        setMessage({ type: 'success', text: `Convite enviado para ${email}` })
+        setEmail('')
+        router.refresh()
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Erro de conexão. Tente novamente.' })
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (

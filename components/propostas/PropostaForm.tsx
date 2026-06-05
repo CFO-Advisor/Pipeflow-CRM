@@ -52,19 +52,33 @@ export function PropostaForm({ deals, templates, companies }: PropostaFormProps)
   })
   const [items, setItems] = useState<ItemRow[]>([{ description: '', quantity: 1, unit_price: 0 }])
 
-  // Filtrar deals pela empresa selecionada
-  const filteredDeals = selectedCompanyId
-    ? deals.filter(d => d.company_id === selectedCompanyId)
-    : deals
+  const [selectedLeadCompany, setSelectedLeadCompany] = useState('')
+
+  // Nomes únicos de empresa dos leads (para o seletor de Empresa do Lead)
+  const leadCompanyOptions = Array.from(
+    new Set(deals.map(d => d.leadCompany).filter(Boolean))
+  ).sort() as string[]
+
+  // Filtrar deals: primeiro por empresa da tabela companies, depois por empresa do lead
+  const filteredDeals = deals.filter(d => {
+    const matchesCompany = selectedCompanyId ? d.company_id === selectedCompanyId : true
+    const matchesLeadCompany = selectedLeadCompany ? d.leadCompany === selectedLeadCompany : true
+    return matchesCompany && matchesLeadCompany
+  })
 
   function handleCompanyChange(companyId: string) {
     setSelectedCompanyId(companyId)
-    // Limpar deal se não pertence à nova empresa
-    if (companyId && form.deal_id) {
+    if (form.deal_id) {
       const deal = deals.find(d => d.id === form.deal_id)
-      if (deal && deal.company_id !== companyId) {
-        setForm(p => ({ ...p, deal_id: '' }))
-      }
+      if (deal && deal.company_id !== companyId) setForm(p => ({ ...p, deal_id: '' }))
+    }
+  }
+
+  function handleLeadCompanyChange(company: string) {
+    setSelectedLeadCompany(company)
+    if (form.deal_id) {
+      const deal = deals.find(d => d.id === form.deal_id)
+      if (deal && deal.leadCompany !== company) setForm(p => ({ ...p, deal_id: '' }))
     }
   }
 
@@ -134,6 +148,23 @@ export function PropostaForm({ deals, templates, companies }: PropostaFormProps)
                 <option value="">Todas as empresas</option>
                 {companies.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Empresa do Lead */}
+          {leadCompanyOptions.length > 0 && (
+            <div className="space-y-2">
+              <Label>Empresa do Lead</Label>
+              <select
+                value={selectedLeadCompany}
+                onChange={e => handleLeadCompanyChange(e.target.value)}
+                className={SELECT_CLASS}
+              >
+                <option value="">Todas as empresas</option>
+                {leadCompanyOptions.map(name => (
+                  <option key={name} value={name}>{name}</option>
                 ))}
               </select>
             </div>

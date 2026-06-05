@@ -20,6 +20,8 @@ interface ItemRow {
 interface DealOption {
   id: string
   title: string
+  leadName: string | null
+  company: string | null
 }
 
 interface PropostaFormProps {
@@ -102,6 +104,17 @@ export function PropostaForm({ deals, templates }: PropostaFormProps) {
               <option value="">Selecione um negócio</option>
               {deals.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}
             </select>
+            {/* Empresa do lead vinculado ao deal selecionado */}
+            {form.deal_id && (() => {
+              const selected = deals.find(d => d.id === form.deal_id)
+              const info = [selected?.company, selected?.leadName].filter(Boolean).join(' · ')
+              return info ? (
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
+                  {info}
+                </p>
+              ) : null
+            })()}
           </div>
 
           <div className="space-y-2">

@@ -18,11 +18,14 @@ export default async function NovaPropostaPage() {
 
   const service = createServiceClient()
   const [{ data: dealsData }, { data: templatesData }] = await Promise.all([
-    service.from('deals').select('id, title').eq('workspace_id', workspaceId).not('stage', 'in', '("closed_lost")').order('created_at', { ascending: false }),
+    service.from('deals').select('id, title, lead:leads(name, company)').eq('workspace_id', workspaceId).not('stage', 'in', '("closed_lost")').order('created_at', { ascending: false }),
     service.from('proposal_templates').select('*').eq('workspace_id', workspaceId).order('name'),
   ])
 
-  const deals = (dealsData ?? []).map(d => ({ id: d.id, title: d.title }))
+  const deals = (dealsData ?? []).map(d => {
+    const lead = Array.isArray(d.lead) ? d.lead[0] : d.lead
+    return { id: d.id, title: d.title, leadName: lead?.name ?? null, company: lead?.company ?? null }
+  })
   const templates = (templatesData ?? []) as ProposalTemplate[]
 
   return (

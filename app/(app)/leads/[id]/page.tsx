@@ -7,9 +7,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ActivityTimeline } from '@/components/leads/ActivityTimeline'
-import { ActivityForm } from '@/components/leads/ActivityForm'
 import { LeadDealPanel } from '@/components/leads/LeadDealPanel'
+import { LeadActivityPanel } from '@/components/leads/LeadActivityPanel'
 import { formatDate } from '@/lib/utils'
 import type { ActivityWithAuthor, BusinessUnit, Deal } from '@/types'
 
@@ -163,35 +162,16 @@ export default async function LeadDetailPage({ params }: Props) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Registrar atividade</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ActivityForm
-            leadId={lead.id}
-            workspaceId={workspaceId ?? lead.workspace_id}
-            userId={user.id}
-            leadEmail={lead.email}
-            leadPhone={lead.phone}
-            leadName={lead.name}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Histórico de atividades
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({activities.length})
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ActivityTimeline activities={activities} leadId={id} />
-        </CardContent>
-      </Card>
+      <LeadActivityPanel
+        leadId={lead.id}
+        workspaceId={workspaceId ?? lead.workspace_id}
+        userId={user.id}
+        deals={deals}
+        activities={activities}
+        leadEmail={lead.email}
+        leadPhone={lead.phone}
+        leadName={lead.name}
+      />
     </div>
   )
 }

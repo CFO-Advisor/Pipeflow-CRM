@@ -107,6 +107,7 @@ export interface Activity {
   workspace_id: string
   company_id: string | null
   lead_id: string
+  deal_id: string | null
   author_id: string | null
   type: ActivityType
   description: string

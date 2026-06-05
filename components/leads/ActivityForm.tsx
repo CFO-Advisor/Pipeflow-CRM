@@ -21,6 +21,7 @@ interface ActivityFormProps {
   leadId: string
   workspaceId: string
   userId: string
+  dealId: string
   leadEmail?: string | null
   leadPhone?: string | null
   leadName?: string
@@ -54,6 +55,7 @@ export function ActivityForm({
   leadId,
   workspaceId,
   userId,
+  dealId,
   leadEmail,
   leadPhone,
   leadName,
@@ -109,6 +111,7 @@ export function ActivityForm({
       .from('activities')
       .insert({
         lead_id: leadId,
+        deal_id: dealId,
         workspace_id: workspaceId,
         author_id: userId,
         type,

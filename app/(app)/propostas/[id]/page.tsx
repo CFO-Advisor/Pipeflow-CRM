@@ -29,7 +29,7 @@ export default async function PropostaDetailPage({
   const service = createServiceClient()
   const { data: proposal } = await service
     .from('proposals')
-    .select('*, items:proposal_items(*)')
+    .select('*, items:proposal_items(*), lead:leads(name, company), deal:deals(lead:leads(name, company))')
     .eq('id', id)
     .eq('workspace_id', workspaceId)
     .single()
@@ -37,6 +37,14 @@ export default async function PropostaDetailPage({
   if (!proposal) notFound()
 
   const p = proposal as Proposal & { items: NonNullable<Proposal['items']> }
+
+  // Buscar empresa e nome do lead (direto ou via deal)
+  const directLead = Array.isArray(proposal.lead) ? proposal.lead[0] : proposal.lead
+  const dealObj = Array.isArray(proposal.deal) ? proposal.deal[0] : proposal.deal
+  const dealLead = Array.isArray(dealObj?.lead) ? dealObj.lead[0] : dealObj?.lead
+  const lead = directLead ?? dealLead
+  const leadCompany: string | null = lead?.company ?? null
+  const leadName: string | null = lead?.name ?? null
   const items = p.items ?? []
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3001'
   const publicLink = `${appUrl}/proposta/${p.public_token}`
@@ -48,9 +56,14 @@ export default async function PropostaDetailPage({
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold text-foreground tracking-tight truncate">{p.title}</h1>
             <PropostaStatusBadge status={p.status} />
+            {(leadCompany || leadName) && (
+              <span className="text-sm text-muted-foreground">
+                {[leadCompany, leadName].filter(Boolean).join(' · ')}
+              </span>
+            )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
             Criada em {new Date(p.created_at).toLocaleDateString('pt-BR')}

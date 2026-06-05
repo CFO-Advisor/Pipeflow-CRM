@@ -21,8 +21,10 @@ const STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: 'expired', label: 'Expirada' },
 ]
 
+type ProposalWithLead = Proposal & { leadCompany: string | null; leadName: string | null }
+
 interface PropostasClientProps {
-  proposals: Proposal[]
+  proposals: ProposalWithLead[]
 }
 
 export function PropostasClient({ proposals }: PropostasClientProps) {
@@ -125,6 +127,9 @@ export function PropostasClient({ proposals }: PropostasClientProps) {
                       </Link>
                       <PropostaStatusBadge status={proposal.status} />
                     </div>
+                    {proposal.leadCompany && (
+                      <p className="text-xs text-muted-foreground mb-1">{proposal.leadCompany}</p>
+                    )}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       <span className="font-medium text-foreground">{formatCurrency(proposal.total_value)}</span>
                       {proposal.valid_until && (

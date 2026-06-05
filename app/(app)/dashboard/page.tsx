@@ -13,15 +13,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 const ConversionTrendChart = dynamic(
   () => import('@/components/dashboard/ConversionTrendChart').then((m) => ({ default: m.ConversionTrendChart })),
-  { ssr: false, loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
+  { loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
 )
 const MonthlyRevenueChart = dynamic(
   () => import('@/components/dashboard/MonthlyRevenueChart').then((m) => ({ default: m.MonthlyRevenueChart })),
-  { ssr: false, loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
+  { loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
 )
 const ActivityDistributionChart = dynamic(
   () => import('@/components/dashboard/ActivityDistributionChart').then((m) => ({ default: m.ActivityDistributionChart })),
-  { ssr: false, loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
+  { loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
 )
 import { PeriodSelector } from '@/components/dashboard/PeriodSelector'
 import { BUFilterSelect } from '@/components/shared/BUFilterSelect'

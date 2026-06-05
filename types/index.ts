@@ -173,3 +173,98 @@ export const PERMISSION_RESOURCE_LABELS: Record<PermissionResource, string> = {
   activities: 'Atividades',
   reports:    'Relatórios',
 }
+
+// ── Propostas ──────────────────────────────────────────────────────────
+
+export type ProposalStatus = 'draft' | 'sent' | 'awaiting_signature' | 'signed' | 'rejected' | 'expired'
+
+export interface ProposalItem {
+  id: string
+  proposal_id: string
+  description: string
+  quantity: number
+  unit_price: number
+  position: number
+}
+
+export interface Proposal {
+  id: string
+  workspace_id: string
+  deal_id: string
+  lead_id: string | null
+  title: string
+  description: string | null
+  valid_until: string | null
+  status: ProposalStatus
+  total_value: number
+  notes: string | null
+  created_by: string | null
+  signed_by_seller_at: string | null
+  signed_by_client_at: string | null
+  public_token: string
+  pdf_path: string | null
+  signed_pdf_path: string | null
+  created_at: string
+  updated_at: string
+  items?: ProposalItem[]
+}
+
+export interface ProposalTemplate {
+  id: string
+  workspace_id: string
+  name: string
+  description: string | null
+  items: Array<{ description: string; quantity: number; unit_price: number }>
+  created_by: string | null
+  created_at: string
+}
+
+export const PROPOSAL_STATUS_LABELS: Record<ProposalStatus, string> = {
+  draft:               'Rascunho',
+  sent:                'Enviada',
+  awaiting_signature:  'Aguardando Assinatura',
+  signed:              'Assinada',
+  rejected:            'Recusada',
+  expired:             'Expirada',
+}
+
+// ── Metas e Comissões ──────────────────────────────────────────────────
+
+export type GoalType = 'revenue' | 'deals_count'
+export type CommissionStatus = 'pending' | 'paid'
+
+export interface SalesGoal {
+  id: string
+  workspace_id: string
+  member_id: string
+  goal_type: GoalType
+  target_value: number
+  period_start: string
+  period_end: string
+  created_by: string | null
+  created_at: string
+}
+
+export interface CommissionRule {
+  id: string
+  workspace_id: string
+  name: string
+  percentage: number
+  applies_to: 'all' | 'seller' | 'manager' | 'director' | 'master'
+  active: boolean
+  created_at: string
+}
+
+export interface Commission {
+  id: string
+  workspace_id: string
+  deal_id: string
+  member_id: string
+  rule_id: string | null
+  deal_value: number
+  percentage: number
+  amount: number
+  status: CommissionStatus
+  paid_at: string | null
+  created_at: string
+}

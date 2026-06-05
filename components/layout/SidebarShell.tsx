@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Users, Kanban, Settings, Building2, BarChart2, CalendarDays, Menu,
+  LayoutDashboard, Users, Kanban, Settings, Building2, BarChart2, CalendarDays, Menu, FileText, Target,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
@@ -28,12 +28,14 @@ interface SidebarShellProps {
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/leads',     label: 'Leads',       icon: Users },
-  { href: '/pipeline',  label: 'Pipeline',    icon: Kanban },
-  { href: '/vendas',    label: 'Performance', icon: BarChart2 },
-  { href: '/calendario',label: 'Calendário',  icon: CalendarDays },
-  { href: '/settings',  label: 'Configurações', icon: Settings },
+  { href: '/dashboard',  label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/leads',      label: 'Leads',        icon: Users },
+  { href: '/pipeline',   label: 'Pipeline',     icon: Kanban },
+  { href: '/vendas',     label: 'Performance',  icon: BarChart2 },
+  { href: '/propostas',  label: 'Propostas',    icon: FileText },
+  { href: '/metas',      label: 'Metas',        icon: Target },
+  { href: '/calendario', label: 'Calendário',   icon: CalendarDays },
+  { href: '/settings',   label: 'Configurações',icon: Settings },
 ]
 
 export function SidebarShell({

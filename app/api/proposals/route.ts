@@ -40,9 +40,12 @@ export async function POST(req: NextRequest) {
 
   const service = createServiceClient()
 
-  // Verificar que o deal pertence ao workspace
-  const { data: deal } = await service.from('deals').select('id').eq('id', deal_id).eq('workspace_id', workspaceId).single()
+  // Verificar que o deal pertence ao workspace e buscar lead_id automaticamente
+  const { data: deal } = await service.from('deals').select('id, lead_id').eq('id', deal_id).eq('workspace_id', workspaceId).single()
   if (!deal) return NextResponse.json({ error: 'Deal não encontrado.' }, { status: 404 })
+
+  // Usar lead_id do deal se não foi informado explicitamente
+  const resolvedLeadId = lead_id || deal.lead_id || null
 
   // Buscar itens do template se fornecido
   let templateItems = items
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
     .insert({
       workspace_id: workspaceId,
       deal_id,
-      lead_id: lead_id || null,
+      lead_id: resolvedLeadId,
       title: title.trim(),
       description: description?.trim() || null,
       valid_until: valid_until || null,

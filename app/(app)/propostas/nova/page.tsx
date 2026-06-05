@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { PropostaForm } from '@/components/propostas/PropostaForm'
-import type { ProposalTemplate } from '@/types'
+import type { Company, ProposalTemplate } from '@/types'
 
 export default async function NovaPropostaPage() {
   const supabase = await createClient()
@@ -17,16 +17,24 @@ export default async function NovaPropostaPage() {
   if (!workspaceId) redirect('/dashboard')
 
   const service = createServiceClient()
-  const [{ data: dealsData }, { data: templatesData }] = await Promise.all([
-    service.from('deals').select('id, title, lead:leads(name, company)').eq('workspace_id', workspaceId).not('stage', 'in', '("closed_lost")').order('created_at', { ascending: false }),
+  const [{ data: dealsData }, { data: templatesData }, { data: companiesData }] = await Promise.all([
+    service.from('deals').select('id, title, company_id, lead:leads(name, company)').eq('workspace_id', workspaceId).not('stage', 'in', '("closed_lost")').order('created_at', { ascending: false }),
     service.from('proposal_templates').select('*').eq('workspace_id', workspaceId).order('name'),
+    service.from('companies').select('id, name').eq('workspace_id', workspaceId).eq('active', true).order('name'),
   ])
 
   const deals = (dealsData ?? []).map(d => {
     const lead = Array.isArray(d.lead) ? d.lead[0] : d.lead
-    return { id: d.id, title: d.title, leadName: lead?.name ?? null, company: lead?.company ?? null }
+    return {
+      id: d.id,
+      title: d.title,
+      company_id: d.company_id ?? null,
+      leadName: lead?.name ?? null,
+      leadCompany: lead?.company ?? null,
+    }
   })
   const templates = (templatesData ?? []) as ProposalTemplate[]
+  const companies = (companiesData ?? []) as Pick<Company, 'id' | 'name'>[]
 
   return (
     <div className="space-y-6">
@@ -39,7 +47,7 @@ export default async function NovaPropostaPage() {
           <p className="text-sm text-muted-foreground mt-0.5">Crie uma proposta vinculada a um negócio</p>
         </div>
       </div>
-      <PropostaForm deals={deals} templates={templates} />
+      <PropostaForm deals={deals} templates={templates} companies={companies} />
     </div>
   )
 }

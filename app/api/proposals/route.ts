@@ -74,20 +74,6 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Registrar atividade de proposta criada no lead
-  if (resolvedLeadId) {
-    await service.from('activities').insert({
-      workspace_id: workspaceId,
-      lead_id: resolvedLeadId,
-      deal_id: deal_id,
-      company_id: deal.company_id ?? null,
-      author_id: user.id,
-      type: 'proposal',
-      description: `Proposta criada: ${title.trim()}`,
-      scheduled_at: new Date().toISOString().slice(0, 10),
-    })
-  }
-
   // Inserir itens
   if (templateItems.length > 0) {
     const itemRows = templateItems.map((item: { description: string; quantity: number; unit_price: number }, idx: number) => ({

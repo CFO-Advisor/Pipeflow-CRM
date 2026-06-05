@@ -17,10 +17,6 @@ export async function GET() {
     .eq('id', workspaceId)
     .single()
 
-  if (workspace?.plan !== 'max') {
-    return NextResponse.json({ error: 'Recurso disponível apenas no plano MAX.' }, { status: 403 })
-  }
-
   const { data: companies, error } = await supabase
     .from('companies')
     .select('*')
@@ -52,20 +48,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Apenas admin ou master pode criar empresas.' }, { status: 403 })
   }
 
+  const { name, cnpj } = await req.json()
+
+  if (!name?.trim()) {
+    return NextResponse.json({ error: 'Nome da empresa é obrigatório.' }, { status: 400 })
+  }
+
+  // Verificar limite de empresas por plano
+  const COMPANY_LIMIT: Record<string, number> = { free: 1, pro: 1, max: Infinity }
+
   const { data: workspace } = await supabase
     .from('workspaces')
     .select('plan')
     .eq('id', workspaceId)
     .single()
 
-  if (workspace?.plan !== 'max') {
-    return NextResponse.json({ error: 'Recurso disponível apenas no plano MAX.' }, { status: 403 })
-  }
+  const { count } = await supabase
+    .from('companies')
+    .select('id', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId)
+    .eq('active', true)
 
-  const { name, cnpj } = await req.json()
-
-  if (!name?.trim()) {
-    return NextResponse.json({ error: 'Nome da empresa é obrigatório.' }, { status: 400 })
+  const plan = workspace?.plan ?? 'free'
+  const limit = COMPANY_LIMIT[plan] ?? 1
+  if ((count ?? 0) >= limit) {
+    return NextResponse.json(
+      { error: 'Limite de empresas atingido. Faça upgrade para o plano MAX para adicionar mais empresas.' },
+      { status: 403 }
+    )
   }
 
   const { data: company, error } = await supabase

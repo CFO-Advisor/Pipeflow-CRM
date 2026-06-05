@@ -1,13 +1,14 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { ArrowLeft, Building2, Plus, Pencil, ToggleLeft, ToggleRight } from 'lucide-react'
+import { ArrowLeft, Building2, Layers, Plus, Pencil, ToggleLeft, ToggleRight, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CompanyForm } from '@/components/settings/CompanyForm'
-import type { Company } from '@/types'
+import { BusinessUnitForm } from '@/components/settings/BusinessUnitForm'
+import type { Company, BusinessUnit } from '@/types'
 
 export default async function CompaniesPage() {
   const supabase = await createClient()
@@ -27,7 +28,7 @@ export default async function CompaniesPage() {
     .eq('id', workspaceId)
     .single()
 
-  if (!workspace || workspace.plan !== 'max') redirect('/settings/billing')
+  if (!workspace) redirect('/dashboard')
 
   const { data: member } = await supabase
     .from('workspace_members')
@@ -38,15 +39,18 @@ export default async function CompaniesPage() {
 
   const canManage = member?.role === 'admin' || member?.sales_role === 'master'
 
-  const { data: companies } = await supabase
-    .from('companies')
-    .select('*')
-    .eq('workspace_id', workspaceId)
-    .order('name')
+  const [{ data: companies }, { data: allBUs }] = await Promise.all([
+    supabase.from('companies').select('*').eq('workspace_id', workspaceId).order('name'),
+    supabase.from('business_units').select('*').eq('workspace_id', workspaceId).order('name'),
+  ])
 
   const allCompanies = (companies ?? []) as Company[]
+  const businessUnits = (allBUs ?? []) as BusinessUnit[]
   const active = allCompanies.filter((c) => c.active)
   const inactive = allCompanies.filter((c) => !c.active)
+
+  const plan = workspace.plan
+  const atLimit = plan !== 'max' && active.length >= 1
 
   return (
     <div className="max-w-2xl w-full space-y-6">
@@ -65,14 +69,21 @@ export default async function CompaniesPage() {
           </p>
         </div>
         {canManage && (
-          <CompanyForm
-            trigger={
-              <Button size="sm" className="flex-shrink-0">
-                <Plus className="w-4 h-4 mr-1.5" />
-                Nova empresa
-              </Button>
-            }
-          />
+          atLimit ? (
+            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 flex-shrink-0 bg-amber-50 dark:bg-amber-950/30">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Plano {plan.toUpperCase()} — limite de 1 empresa. <span className="font-semibold">Assine o MAX para mais.</span></span>
+            </div>
+          ) : (
+            <CompanyForm
+              trigger={
+                <Button size="sm" className="flex-shrink-0">
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Nova empresa
+                </Button>
+              }
+            />
+          )
         )}
       </div>
 
@@ -81,7 +92,7 @@ export default async function CompaniesPage() {
         <CardHeader>
           <CardTitle className="text-base">Empresas ativas</CardTitle>
           <CardDescription>
-            Cada empresa possui seus próprios leads, negócios e equipe de vendas.
+            Organize leads e negócios por empresa e suas unidades de negócio.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,7 +114,12 @@ export default async function CompaniesPage() {
           ) : (
             <div className="divide-y divide-border">
               {active.map((company) => (
-                <CompanyRow key={company.id} company={company} canManage={canManage} />
+                <CompanyRow
+                  key={company.id}
+                  company={company}
+                  canManage={canManage}
+                  businessUnits={businessUnits.filter((bu) => bu.company_id === company.id)}
+                />
               ))}
             </div>
           )}
@@ -122,7 +138,12 @@ export default async function CompaniesPage() {
           <CardContent>
             <div className="divide-y divide-border">
               {inactive.map((company) => (
-                <CompanyRow key={company.id} company={company} canManage={canManage} />
+                <CompanyRow
+                  key={company.id}
+                  company={company}
+                  canManage={canManage}
+                  businessUnits={businessUnits.filter((bu) => bu.company_id === company.id)}
+                />
               ))}
             </div>
           </CardContent>
@@ -132,36 +153,100 @@ export default async function CompaniesPage() {
   )
 }
 
-function CompanyRow({ company, canManage }: { company: Company; canManage: boolean }) {
+function CompanyRow({
+  company,
+  canManage,
+  businessUnits,
+}: {
+  company: Company
+  canManage: boolean
+  businessUnits: BusinessUnit[]
+}) {
+  const activeBUs = businessUnits.filter((bu) => bu.active)
+  const inactiveBUs = businessUnits.filter((bu) => !bu.active)
+
   return (
-    <div className="flex items-center justify-between gap-3 py-3">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div className="w-8 h-8 bg-purple-100 dark:bg-purple-950 rounded-lg flex items-center justify-center flex-shrink-0">
-          <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+    <div className="py-3 space-y-2">
+      {/* Linha da empresa */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 bg-purple-100 dark:bg-purple-950 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">{company.name}</p>
+            {company.cnpj && (
+              <p className="text-xs text-muted-foreground">CNPJ: {company.cnpj}</p>
+            )}
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">{company.name}</p>
-          {company.cnpj && (
-            <p className="text-xs text-muted-foreground">CNPJ: {company.cnpj}</p>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {!company.active && <Badge variant="secondary">Inativa</Badge>}
+          {canManage && (
+            <>
+              <CompanyForm
+                company={company}
+                trigger={
+                  <Button variant="ghost" size="icon" className="w-8 h-8">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                }
+              />
+              <ToggleActiveButton companyId={company.id} active={company.active} />
+            </>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {!company.active && <Badge variant="secondary">Inativa</Badge>}
-        {canManage && (
-          <>
-            <CompanyForm
-              company={company}
-              trigger={
-                <Button variant="ghost" size="icon" className="w-8 h-8">
-                  <Pencil className="w-3.5 h-3.5" />
-                </Button>
-              }
-            />
-            <ToggleActiveButton companyId={company.id} active={company.active} />
-          </>
+
+      {/* Unidades de Negócio */}
+      <div className="ml-11 space-y-1">
+        {activeBUs.map((bu) => (
+          <BusinessUnitRow key={bu.id} bu={bu} canManage={canManage} />
+        ))}
+        {inactiveBUs.map((bu) => (
+          <BusinessUnitRow key={bu.id} bu={bu} canManage={canManage} />
+        ))}
+        {canManage && company.active && (
+          <BusinessUnitForm
+            companyId={company.id}
+            trigger={
+              <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+                <Plus className="w-3.5 h-3.5" />
+                Nova unidade de negócio
+              </button>
+            }
+          />
+        )}
+        {businessUnits.length === 0 && !canManage && (
+          <p className="text-xs text-muted-foreground italic">Sem unidades de negócio.</p>
         )}
       </div>
+    </div>
+  )
+}
+
+function BusinessUnitRow({ bu, canManage }: { bu: BusinessUnit; canManage: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md px-2 py-1 bg-muted/30 border border-border/50">
+      <div className="flex items-center gap-2 min-w-0">
+        <Layers className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+        <span className="text-xs text-foreground truncate">{bu.name}</span>
+        {!bu.active && <Badge variant="secondary" className="text-[10px] px-1 py-0">Inativa</Badge>}
+      </div>
+      {canManage && (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <BusinessUnitForm
+            companyId={bu.company_id}
+            businessUnit={bu}
+            trigger={
+              <Button variant="ghost" size="icon" className="w-6 h-6">
+                <Pencil className="w-3 h-3" />
+              </Button>
+            }
+          />
+          <ToggleActiveBUButton buId={bu.id} active={bu.active} />
+        </div>
+      )}
     </div>
   )
 }
@@ -187,6 +272,32 @@ function ToggleActiveButton({ companyId, active }: { companyId: string; active: 
           <ToggleRight className="w-4 h-4 text-green-600" />
         ) : (
           <ToggleLeft className="w-4 h-4" />
+        )}
+      </Button>
+    </form>
+  )
+}
+
+function ToggleActiveBUButton({ buId, active }: { buId: string; active: boolean }) {
+  return (
+    <form
+      action={async () => {
+        'use server'
+        const { toggleBusinessUnitActive } = await import('@/app/actions/businessUnits')
+        await toggleBusinessUnitActive(buId, !active)
+      }}
+    >
+      <Button
+        type="submit"
+        variant="ghost"
+        size="icon"
+        className="w-6 h-6 text-muted-foreground hover:text-foreground"
+        title={active ? 'Desativar unidade' : 'Reativar unidade'}
+      >
+        {active ? (
+          <ToggleRight className="w-3.5 h-3.5 text-green-600" />
+        ) : (
+          <ToggleLeft className="w-3.5 h-3.5" />
         )}
       </Button>
     </form>

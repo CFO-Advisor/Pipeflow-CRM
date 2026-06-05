@@ -17,9 +17,11 @@ interface BUFilterSelectProps {
 }
 
 export function BUFilterSelect({ businessUnits, currentCompanyId, currentBusinessUnitId }: BUFilterSelectProps) {
-  if (!currentCompanyId) return null
+  // Filtra por empresa se selecionada, senão mostra todas as BUs ativas
+  const activeBUs = currentCompanyId
+    ? businessUnits.filter(bu => bu.company_id === currentCompanyId && bu.active)
+    : businessUnits.filter(bu => bu.active)
 
-  const activeBUs = businessUnits.filter(bu => bu.company_id === currentCompanyId && bu.active)
   if (activeBUs.length === 0) return null
 
   const currentBU = activeBUs.find(bu => bu.id === currentBusinessUnitId)

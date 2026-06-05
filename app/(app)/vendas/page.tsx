@@ -79,9 +79,12 @@ export default async function VendasPage() {
     leadsQuery = leadsQuery.eq('business_unit_id', businessUnitId)
   }
 
-  const busQuery = companyId
-    ? service.from('business_units').select('id, workspace_id, company_id, name, active, created_at').eq('workspace_id', workspaceId).eq('company_id', companyId).eq('active', true).order('name')
-    : Promise.resolve({ data: [] })
+  const busQuery = service
+    .from('business_units')
+    .select('id, workspace_id, company_id, name, active, created_at')
+    .eq('workspace_id', workspaceId)
+    .eq('active', true)
+    .order('name')
 
   const [{ data: deals }, { data: leads }, { data: busData }] = await Promise.all([dealsQuery, leadsQuery, busQuery])
   const businessUnits = (busData ?? []) as BusinessUnit[]

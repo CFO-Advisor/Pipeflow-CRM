@@ -129,9 +129,12 @@ export default async function DashboardPage({
   if (companyId) prevDealsQuery = prevDealsQuery.eq('company_id', companyId)
   if (businessUnitId) prevDealsQuery = prevDealsQuery.eq('business_unit_id', businessUnitId)
 
-  const busQuery = companyId
-    ? supabase.from('business_units').select('id, workspace_id, company_id, name, active, created_at').eq('workspace_id', workspaceId).eq('company_id', companyId).eq('active', true).order('name')
-    : Promise.resolve({ data: [] })
+  const busQuery = supabase
+    .from('business_units')
+    .select('id, workspace_id, company_id, name, active, created_at')
+    .eq('workspace_id', workspaceId)
+    .eq('active', true)
+    .order('name')
 
   const [
     { data: leads },

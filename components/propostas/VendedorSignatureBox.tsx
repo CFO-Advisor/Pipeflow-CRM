@@ -76,24 +76,29 @@ export function VendedorSignatureBox({ proposalId, signedAt, hasPdf, clientHadSi
         id={`vendor-upload-${proposalId}`}
         disabled={uploading}
       />
-      <label
-        htmlFor={`vendor-upload-${proposalId}`}
-        className={`inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium transition-colors select-none ${
-          uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
-        }`}
-      >
-        <Upload className="w-3.5 h-3.5" />
-        {uploading ? 'Enviando...' : signedAt ? 'Substituir PDF' : 'Anexar PDF assinado'}
-      </label>
+      <div className="relative inline-block group">
+        <label
+          htmlFor={`vendor-upload-${proposalId}`}
+          className={`inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium transition-colors select-none ${
+            uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
+          }`}
+        >
+          <Upload className="w-3.5 h-3.5" />
+          {uploading ? 'Enviando...' : signedAt ? 'Substituir PDF' : 'Anexar PDF assinado'}
+        </label>
+
+        {/* Tooltip de aviso — aparece apenas quando o cliente já havia assinado */}
+        {(clientHadSigned || clientReset) && !uploading && signedAt && (
+          <div className="absolute left-0 bottom-full mb-2 w-64 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10">
+            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 text-xs rounded-lg px-3 py-2 shadow-lg">
+              ⚠️ Ao substituir, a assinatura do cliente será invalidada e ele precisará assinar novamente.
+            </div>
+            <div className="w-2.5 h-2.5 bg-amber-50 dark:bg-amber-950 border-r border-b border-amber-300 dark:border-amber-700 rotate-45 ml-3 -mt-1.5" />
+          </div>
+        )}
+      </div>
 
       {error && <p className="text-xs text-destructive">{error}</p>}
-
-      {/* Aviso após substituição que invalidou a assinatura do cliente */}
-      {(clientReset || (clientHadSigned && signedAt)) && (
-        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded px-2 py-1.5">
-          ⚠️ A assinatura do cliente foi invalidada. O cliente precisará assinar novamente.
-        </p>
-      )}
     </div>
   )
 }

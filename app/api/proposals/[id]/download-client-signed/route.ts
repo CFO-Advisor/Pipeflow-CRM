@@ -10,29 +10,40 @@ export async function GET(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
+  if (!user) return new NextResponse('Não autorizado.', { status: 401 })
 
   const cookieStore = await cookies()
   const workspaceId = cookieStore.get('current_workspace_id')?.value
-  if (!workspaceId) return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 400 })
+  if (!workspaceId) return new NextResponse('Workspace não encontrado.', { status: 400 })
 
   const service = createServiceClient()
   const { data: proposal } = await service
     .from('proposals')
-    .select('id')
+    .select('id, signed_by_client_at')
     .eq('id', id)
     .eq('workspace_id', workspaceId)
     .single()
 
-  if (!proposal) return NextResponse.json({ error: 'Proposta não encontrada.' }, { status: 404 })
+  if (!proposal?.signed_by_client_at) {
+    return new NextResponse('PDF do cliente não encontrado.', { status: 404 })
+  }
 
   const filePath = `proposals/${id}/client-signed.pdf`
-
   const { data, error } = await service.storage
     .from('deal-attachments')
-    .createSignedUrl(filePath, 300)
+    .download(filePath)
 
-  if (error || !data) return NextResponse.json({ error: 'PDF do cliente não encontrado.' }, { status: 404 })
+  if (error || !data) return new NextResponse('Erro ao obter PDF.', { status: 500 })
 
-  return NextResponse.redirect(data.signedUrl)
+  const buffer = await data.arrayBuffer()
+  const filename = `proposta-${id.slice(0, 8)}-cliente-assinado.pdf`
+
+  return new NextResponse(buffer, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Cache-Control': 'no-store',
+    },
+  })
 }

@@ -23,6 +23,20 @@ export default async function PropostaPublicPage({
   if (!data) notFound()
 
   const proposal = data as Proposal & { items: ProposalItem[] }
+
+  // Bloquear acesso a propostas não publicadas ou expiradas
+  const blockedStatuses = ['draft', 'expired']
+  if (blockedStatuses.includes(proposal.status)) notFound()
+
+  // Auto-expirar se a data de validade passou e ainda está em aberto
+  if (
+    proposal.valid_until &&
+    new Date(proposal.valid_until) < new Date() &&
+    ['sent', 'awaiting_signature'].includes(proposal.status)
+  ) {
+    await service.from('proposals').update({ status: 'expired' }).eq('id', proposal.id)
+    notFound()
+  }
   const items = proposal.items ?? []
 
   return (

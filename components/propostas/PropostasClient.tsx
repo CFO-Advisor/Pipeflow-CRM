@@ -126,8 +126,10 @@ export function PropostasClient({ proposals }: PropostasClientProps) {
                         {proposal.title}
                       </Link>
                       <PropostaStatusBadge status={proposal.status} />
-                      {proposal.leadCompany && (
-                        <span className="text-xs text-muted-foreground">{proposal.leadCompany}</span>
+                      {(proposal.leadCompany || proposal.leadName) && (
+                        <span className="text-xs text-muted-foreground">
+                          {[proposal.leadCompany, proposal.leadName].filter(Boolean).join(' · ')}
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">

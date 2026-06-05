@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PropostaStatusBadge } from '@/components/propostas/PropostaStatusBadge'
 import { PropostaActions } from '@/components/propostas/PropostaActions'
+import { VendedorSignatureBox } from '@/components/propostas/VendedorSignatureBox'
 import { formatCurrency } from '@/lib/utils'
 import type { Proposal } from '@/types'
 
@@ -124,14 +125,13 @@ export default async function PropostaDetailPage({
             Baixe o PDF, assine com seu certificado digital Gov.br e faça o upload do arquivo assinado.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <VendedorSignatureBox
+              proposalId={p.id}
+              signedAt={p.signed_by_seller_at}
+              hasPdf={!!p.signed_pdf_path}
+            />
             <div className="border border-border rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium">Vendedor</p>
-              {p.signed_by_seller_at
-                ? <p className="text-xs text-green-600">✓ Assinado em {new Date(p.signed_by_seller_at).toLocaleDateString('pt-BR')}</p>
-                : <p className="text-xs text-muted-foreground">Aguardando assinatura</p>}
-            </div>
-            <div className="border border-border rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium">Cliente</p>
+              <p className="text-sm font-semibold">Cliente</p>
               {p.signed_by_client_at
                 ? <p className="text-xs text-green-600">✓ Assinado em {new Date(p.signed_by_client_at).toLocaleDateString('pt-BR')}</p>
                 : <p className="text-xs text-muted-foreground">Aguardando assinatura do cliente</p>}

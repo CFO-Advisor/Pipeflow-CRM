@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { PropostaStatusBadge } from './PropostaStatusBadge'
+import { CompanyFilterSelect } from '@/components/shared/CompanyFilterSelect'
 import { formatCurrency } from '@/lib/utils'
-import type { Proposal, ProposalStatus } from '@/types'
+import type { Proposal, ProposalStatus, Company } from '@/types'
 
 const STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: 'all', label: 'Todos os status' },
@@ -25,19 +26,28 @@ type ProposalWithLead = Proposal & { leadCompany: string | null; leadName: strin
 
 interface PropostasClientProps {
   proposals: ProposalWithLead[]
+  companies?: Company[]
+  currentCompanyId?: string | null
 }
 
-export function PropostasClient({ proposals }: PropostasClientProps) {
+export function PropostasClient({ proposals, companies = [], currentCompanyId = null }: PropostasClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
+  const [searchCompany, setSearchCompany] = useState('')
+  const [searchLead, setSearchLead] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const filtered = proposals.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase())
+    const q = search.toLowerCase()
+    const qCompany = searchCompany.toLowerCase()
+    const qLead = searchLead.toLowerCase()
+    const matchesSearch = !q || p.title.toLowerCase().includes(q)
+    const matchesCompany = !qCompany || (p.leadCompany ?? '').toLowerCase().includes(qCompany)
+    const matchesLead = !qLead || (p.leadName ?? '').toLowerCase().includes(qLead)
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter
-    return matchesSearch && matchesStatus
+    return matchesSearch && matchesCompany && matchesLead && matchesStatus
   })
 
   async function handleDelete(id: string) {
@@ -71,20 +81,38 @@ export function PropostasClient({ proposals }: PropostasClientProps) {
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Propostas</h1>
           <p className="text-muted-foreground text-sm mt-1">{proposals.length} proposta{proposals.length !== 1 ? 's' : ''} no total</p>
         </div>
-        <Link href="/propostas/nova">
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Nova proposta
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <CompanyFilterSelect
+            companies={companies}
+            currentCompanyId={currentCompanyId}
+          />
+          <Link href="/propostas/nova">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Nova proposta
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-wrap gap-3">
         <Input
           placeholder="Buscar por título..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="sm:max-w-xs"
+          className="w-full sm:max-w-xs"
+        />
+        <Input
+          placeholder="Buscar por empresa do lead..."
+          value={searchCompany}
+          onChange={e => setSearchCompany(e.target.value)}
+          className="w-full sm:max-w-xs"
+        />
+        <Input
+          placeholder="Buscar por nome do lead..."
+          value={searchLead}
+          onChange={e => setSearchLead(e.target.value)}
+          className="w-full sm:max-w-xs"
         />
         <select
           value={statusFilter}
@@ -102,9 +130,9 @@ export function PropostasClient({ proposals }: PropostasClientProps) {
           <CardContent className="py-16 flex flex-col items-center gap-3">
             <FileText className="w-10 h-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              {search || statusFilter !== 'all' ? 'Nenhuma proposta encontrada.' : 'Nenhuma proposta criada ainda.'}
+              {search || searchCompany || searchLead || statusFilter !== 'all' ? 'Nenhuma proposta encontrada.' : 'Nenhuma proposta criada ainda.'}
             </p>
-            {!search && statusFilter === 'all' && (
+            {!search && !searchCompany && !searchLead && statusFilter === 'all' && (
               <Link href="/propostas/nova">
                 <Button variant="outline" size="sm">
                   <Plus className="w-4 h-4 mr-1.5" />

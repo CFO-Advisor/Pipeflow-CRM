@@ -3,8 +3,9 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/pipeline/KanbanBoard'
 import { BUFilterSelect } from '@/components/shared/BUFilterSelect'
+import { CompanyFilterSelect } from '@/components/shared/CompanyFilterSelect'
 import { createServiceClient } from '@/lib/supabase/service'
-import type { BusinessUnit, DealWithLead } from '@/types'
+import type { BusinessUnit, Company, DealWithLead } from '@/types'
 
 export default async function PipelinePage() {
   const supabase = await createClient()
@@ -50,12 +51,14 @@ export default async function PipelinePage() {
   }
 
   const service = createServiceClient()
-  const [{ data: deals }, { data: leads }, { data: busData }] = await Promise.all([
+  const [{ data: deals }, { data: leads }, { data: busData }, { data: companiesData }] = await Promise.all([
     dealsQuery,
     leadsQuery,
     service.from('business_units').select('*').eq('workspace_id', workspaceId).eq('active', true).order('name'),
+    service.from('companies').select('*').eq('workspace_id', workspaceId).order('name'),
   ])
   const businessUnits = (busData ?? []) as BusinessUnit[]
+  const companies = (companiesData ?? []) as Company[]
 
   return (
     <div className="space-y-6">
@@ -66,11 +69,17 @@ export default async function PipelinePage() {
             Arraste os cards para mover entre etapas
           </p>
         </div>
-        <BUFilterSelect
-          businessUnits={businessUnits}
-          currentCompanyId={companyId}
-          currentBusinessUnitId={businessUnitId}
-        />
+        <div className="flex items-center gap-2 flex-wrap">
+          <CompanyFilterSelect
+            companies={companies}
+            currentCompanyId={companyId}
+          />
+          <BUFilterSelect
+            businessUnits={businessUnits}
+            currentCompanyId={companyId}
+            currentBusinessUnitId={businessUnitId}
+          />
+        </div>
       </div>
 
       <div className="-mx-4 lg:mx-0 px-4 lg:px-0">

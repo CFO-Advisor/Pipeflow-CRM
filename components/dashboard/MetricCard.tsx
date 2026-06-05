@@ -37,7 +37,23 @@ export function MetricCard({
 
   return (
     <Card className="transition-shadow duration-200 hover:shadow-md border-border/60">
-      <CardContent className="p-6">
+      {/* Mobile: vertical centrado */}
+      <CardContent className="p-4 sm:hidden flex flex-col items-center text-center gap-2">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconBg}`}>
+          <Icon className={`w-6 h-6 ${iconColor}`} />
+        </div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground leading-tight">{label}</p>
+        <p className="text-xl font-bold text-foreground leading-none tracking-tight break-words">{value}</p>
+        {showDelta && (
+          <div className={`flex items-center justify-center gap-1 ${deltaColor}`}>
+            <DeltaIcon className="w-3 h-3" />
+            <span className="text-xs font-medium">{deltaText}</span>
+          </div>
+        )}
+      </CardContent>
+
+      {/* Desktop: horizontal */}
+      <CardContent className="p-6 hidden sm:block">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>

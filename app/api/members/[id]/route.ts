@@ -10,6 +10,48 @@ interface UpdateMemberBody {
   permissions?: Array<Omit<UserPermission, 'id' | 'member_id'>>
 }
 
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: memberId } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
+
+  const { data: targetMember } = await supabase
+    .from('workspace_members')
+    .select('workspace_id, user_id')
+    .eq('id', memberId)
+    .single()
+
+  if (!targetMember) return NextResponse.json({ error: 'Membro não encontrado.' }, { status: 404 })
+
+  // Impede que o usuário exclua a si mesmo
+  if (targetMember.user_id === user.id) {
+    return NextResponse.json({ error: 'Você não pode remover a si mesmo.' }, { status: 400 })
+  }
+
+  const { data: callerMember } = await supabase
+    .from('workspace_members')
+    .select('role, sales_role')
+    .eq('workspace_id', targetMember.workspace_id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!callerMember || (callerMember.role !== 'admin' && callerMember.sales_role !== 'master')) {
+    return NextResponse.json({ error: 'Apenas admin ou master pode remover membros.' }, { status: 403 })
+  }
+
+  const service = createServiceClient()
+  await service.from('user_company_access').delete().eq('member_id', memberId)
+  await service.from('user_permissions').delete().eq('member_id', memberId)
+  const { error } = await service.from('workspace_members').delete().eq('id', memberId)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json({ success: true })
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

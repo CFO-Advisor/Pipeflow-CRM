@@ -13,9 +13,10 @@ import { MonthlyRevenueChart } from '@/components/dashboard/MonthlyRevenueChart'
 import { ActivityDistributionChart } from '@/components/dashboard/ActivityDistributionChart'
 import { PeriodSelector } from '@/components/dashboard/PeriodSelector'
 import { BUFilterSelect } from '@/components/shared/BUFilterSelect'
+import { CompanyFilterSelect } from '@/components/shared/CompanyFilterSelect'
 import { Suspense } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import type { BusinessUnit, DealStage, DealWithLead } from '@/types'
+import type { BusinessUnit, Company, DealStage, DealWithLead } from '@/types'
 
 const STAGE_LABELS: Record<DealStage, string> = {
   new_lead: 'Novo',
@@ -136,6 +137,12 @@ export default async function DashboardPage({
     .eq('active', true)
     .order('name')
 
+  const companiesQuery = supabase
+    .from('companies')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('name')
+
   const [
     { data: leads },
     { data: deals },
@@ -143,6 +150,7 @@ export default async function DashboardPage({
     { data: openDealsRaw },
     { data: prevDeals },
     { data: busData },
+    { data: companiesData },
   ] = await Promise.all([
     leadsQuery,
     dealsQuery,
@@ -150,8 +158,10 @@ export default async function DashboardPage({
     openDealsQuery,
     prevDealsQuery,
     busQuery,
+    companiesQuery,
   ])
   const businessUnits = (busData ?? []) as BusinessUnit[]
+  const companies = (companiesData ?? []) as Company[]
 
   let activeCompanyName: string | null = null
   if (companyId) {
@@ -310,19 +320,27 @@ export default async function DashboardPage({
             {activeCompanyName ? `${workspace?.name} · ${activeCompanyName}` : workspace?.name}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <BUFilterSelect
-            businessUnits={businessUnits}
-            currentCompanyId={companyId}
-            currentBusinessUnitId={businessUnitId}
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex items-center gap-2 order-2 sm:order-1">
+            <CompanyFilterSelect
+              companies={companies}
+              currentCompanyId={companyId}
+            />
+            <BUFilterSelect
+              businessUnits={businessUnits}
+              currentCompanyId={companyId}
+              currentBusinessUnitId={businessUnitId}
+            />
+          </div>
           <Suspense>
-            <PeriodSelector current={activePeriod} />
+            <div className="order-1 sm:order-2">
+              <PeriodSelector current={activePeriod} />
+            </div>
           </Suspense>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <MetricCard
           label="Total de Leads"
           value={leads?.length ?? 0}

@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { formatCurrency } from '@/lib/utils'
-import type { SalesGoal, Commission, GoalType } from '@/types'
+import { CompanyFilterSelect } from '@/components/shared/CompanyFilterSelect'
+import type { SalesGoal, Commission, GoalType, Company } from '@/types'
 
 interface MemberInfo {
   id: string
@@ -35,6 +36,8 @@ interface MetasClientProps {
   goals: GoalWithProgress[]
   commissions: CommissionWithDeal[]
   canManage: boolean
+  companies?: Company[]
+  currentCompanyId?: string | null
 }
 
 const GOAL_TYPE_LABELS: Record<GoalType, string> = {
@@ -48,7 +51,7 @@ const PERIOD_PRESETS = [
   { label: 'Este trimestre', start: () => { const d = new Date(); const q = Math.floor(d.getMonth() / 3); return new Date(d.getFullYear(), q * 3, 1).toISOString().split('T')[0] }, end: () => { const d = new Date(); const q = Math.floor(d.getMonth() / 3); return new Date(d.getFullYear(), q * 3 + 3, 0).toISOString().split('T')[0] } },
 ]
 
-export function MetasClient({ members, goals, commissions, canManage }: MetasClientProps) {
+export function MetasClient({ members, goals, commissions, canManage, companies = [], currentCompanyId = null }: MetasClientProps) {
   const router = useRouter()
   const [showGoalForm, setShowGoalForm] = useState(false)
   const [goalForm, setGoalForm] = useState({ member_id: '', goal_type: 'revenue' as GoalType, target_value: '', period_start: '', period_end: '' })
@@ -103,12 +106,18 @@ export function MetasClient({ members, goals, commissions, canManage }: MetasCli
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Metas & Comissões</h1>
           <p className="text-muted-foreground text-sm mt-1">Acompanhe o desempenho e as comissões da equipe</p>
         </div>
-        {canManage && (
-          <Button onClick={() => setShowGoalForm(true)} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Nova meta
-          </Button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <CompanyFilterSelect
+            companies={companies}
+            currentCompanyId={currentCompanyId}
+          />
+          {canManage && (
+            <Button onClick={() => setShowGoalForm(true)} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Nova meta
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Resumo de comissões pendentes */}

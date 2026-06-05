@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { MetasClient } from '@/components/metas/MetasClient'
-import type { SalesGoal, Commission } from '@/types'
+import type { SalesGoal, Commission, Company } from '@/types'
 
 export default async function MetasPage() {
   const supabase = await createClient()
@@ -14,14 +14,18 @@ export default async function MetasPage() {
   const workspaceId = cookieStore.get('current_workspace_id')?.value
   if (!workspaceId) redirect('/dashboard')
 
+  const companyId = cookieStore.get('current_company_id')?.value ?? null
+
   const service = createServiceClient()
 
-  const [{ data: memberRows }, { data: goalsData }, { data: commissionsData }, { data: authData }] = await Promise.all([
+  const [{ data: memberRows }, { data: goalsData }, { data: commissionsData }, { data: authData }, { data: companiesData }] = await Promise.all([
     service.from('workspace_members').select('id, user_id, role, sales_role').eq('workspace_id', workspaceId),
     service.from('sales_goals').select('*').eq('workspace_id', workspaceId).order('period_start', { ascending: false }),
     service.from('commissions').select('*, deal:deals(id, title, value), rule:commission_rules(name, percentage)').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     service.auth.admin.listUsers({ perPage: 1000 }),
+    service.from('companies').select('*').eq('workspace_id', workspaceId).order('name'),
   ])
+  const companies = (companiesData ?? []) as Company[]
 
   const userMap = new Map((authData?.users ?? []).map(u => [u.id, { email: u.email ?? '', name: u.user_metadata?.full_name as string | undefined }]))
   const members = (memberRows ?? []).map(m => {
@@ -59,6 +63,8 @@ export default async function MetasPage() {
       goals={goalsWithProgress as (SalesGoal & { achieved: number; percentage: number })[]}
       commissions={(commissionsData ?? []) as (Commission & { deal?: { id: string; title: string; value: number } | null; rule?: { name: string; percentage: number } | null })[]}
       canManage={canManage}
+      companies={companies}
+      currentCompanyId={companyId}
     />
   )
 }

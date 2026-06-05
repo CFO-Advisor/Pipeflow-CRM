@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Kanban, BarChart2, CalendarDays, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, Kanban, BarChart2, CalendarDays, Settings, FileText, Target } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -10,6 +10,8 @@ const navItems = [
   { href: '/leads',      label: 'Leads',         icon: Users },
   { href: '/pipeline',   label: 'Pipeline',      icon: Kanban },
   { href: '/vendas',     label: 'Performance',   icon: BarChart2 },
+  { href: '/propostas',  label: 'Propostas',     icon: FileText },
+  { href: '/metas',      label: 'Metas',         icon: Target },
   { href: '/calendario', label: 'Calendário',    icon: CalendarDays },
   { href: '/settings',   label: 'Configurações', icon: Settings },
 ]

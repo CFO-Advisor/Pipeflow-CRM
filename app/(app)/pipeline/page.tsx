@@ -82,7 +82,7 @@ export default async function PipelinePage() {
         </div>
       </div>
 
-      <div className="-mx-4 lg:mx-0 px-4 lg:px-0">
+      <div>
         <KanbanBoard
           deals={(deals ?? []) as DealWithLead[]}
           workspaceId={workspaceId}

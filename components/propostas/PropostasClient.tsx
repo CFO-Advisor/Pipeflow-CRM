@@ -125,12 +125,17 @@ export function PropostasClient({ proposals }: PropostasClientProps) {
                       </Link>
                       <PropostaStatusBadge status={proposal.status} />
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       <span className="font-medium text-foreground">{formatCurrency(proposal.total_value)}</span>
                       {proposal.valid_until && (
                         <span>Válida até {new Date(proposal.valid_until).toLocaleDateString('pt-BR')}</span>
                       )}
                       <span>Criada em {new Date(proposal.created_at).toLocaleDateString('pt-BR')}</span>
+                      {proposal.signed_by_client_at && (
+                        <span className="text-green-600 dark:text-green-400 font-medium">
+                          ✓ Aceita em {new Date(proposal.signed_by_client_at).toLocaleDateString('pt-BR')}
+                        </span>
+                      )}
                     </div>
                   </div>
 

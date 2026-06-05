@@ -16,7 +16,7 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,6 +39,10 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
 
       if (!res.ok) {
         setMessage({ type: 'error', text: data.error ?? 'Erro ao enviar convite.' })
+      } else if (data.warning) {
+        setMessage({ type: 'warning', text: data.warning })
+        setEmail('')
+        router.refresh()
       } else {
         setMessage({ type: 'success', text: `Convite enviado para ${email}` })
         setEmail('')
@@ -58,6 +62,8 @@ export function InviteForm({ workspaceId, disabled }: InviteFormProps) {
           className={`text-sm rounded-md p-3 ${
             message.type === 'success'
               ? 'bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20'
+              : message.type === 'warning'
+              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
               : 'bg-destructive/10 text-destructive border border-destructive/20'
           }`}
         >

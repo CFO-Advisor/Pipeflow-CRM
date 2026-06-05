@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
     await service.from('activities').insert({
       workspace_id: workspaceId,
       lead_id: resolvedLeadId,
+      deal_id: deal_id,
       company_id: deal.company_id ?? null,
       author_id: user.id,
       type: 'proposal',

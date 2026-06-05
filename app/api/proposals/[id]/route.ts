@@ -85,36 +85,54 @@ export async function PATCH(
   // Quando proposta é marcada como enviada: atualizar deal + registrar atividade
   if (status === 'sent' && result.proposal.status !== 'sent') {
     const dealId = result.proposal.deal_id
+    let companyId: string | null = null
+    let effectiveLeadId = result.proposal.lead_id
 
-    // 1. Avançar estágio do deal para "Proposta Enviada"
     if (dealId) {
-      const { data: deal } = await service
+      const { data: deal, error: dealFetchErr } = await service
         .from('deals')
-        .select('stage, company_id')
+        .select('stage, company_id, lead_id')
         .eq('id', dealId)
         .single()
 
-      // Só avança se ainda não passou desta etapa
-      const advanceable = ['new_lead', 'contacted']
-      if (deal && advanceable.includes(deal.stage)) {
-        await service
-          .from('deals')
-          .update({ stage: 'proposal_sent' })
-          .eq('id', dealId)
+      if (dealFetchErr) {
+        console.error('[proposal sent] erro ao buscar deal:', dealFetchErr.message)
       }
 
-      // 2. Registrar atividade vinculada ao negócio e ao lead
-      if (result.proposal.lead_id) {
-        await service.from('activities').insert({
-          workspace_id: result.workspaceId,
-          lead_id: result.proposal.lead_id,
-          deal_id: dealId,
-          company_id: deal?.company_id ?? null,
-          author_id: result.user.id,
-          type: 'proposal',
-          description: `Proposta enviada: ${updated.title}`,
-          scheduled_at: new Date().toISOString().slice(0, 10),
-        })
+      if (deal) {
+        companyId = deal.company_id ?? null
+        effectiveLeadId = effectiveLeadId ?? deal.lead_id
+
+        // 1. Atualizar estágio para "Proposta Enviada" — exceto se já fechado
+        const closedStages = ['closed_won', 'closed_lost']
+        if (!closedStages.includes(deal.stage)) {
+          const { error: stageErr } = await service
+            .from('deals')
+            .update({ stage: 'proposal_sent' })
+            .eq('id', dealId)
+
+          if (stageErr) {
+            console.error('[proposal sent] erro ao atualizar estágio do deal:', stageErr.message)
+          }
+        }
+      }
+    }
+
+    // 2. Registrar atividade (roda mesmo sem deal_id, desde que tenha lead_id)
+    if (effectiveLeadId) {
+      const { error: actErr } = await service.from('activities').insert({
+        workspace_id: result.workspaceId,
+        lead_id: effectiveLeadId,
+        deal_id: dealId ?? null,
+        company_id: companyId,
+        author_id: result.user.id,
+        type: 'proposal',
+        description: `Proposta enviada: ${updated.title}`,
+        scheduled_at: new Date().toISOString().slice(0, 10),
+      })
+
+      if (actErr) {
+        console.error('[proposal sent] erro ao registrar atividade:', actErr.message)
       }
     }
   }

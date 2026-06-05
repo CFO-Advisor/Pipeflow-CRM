@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 import { Building2, Camera } from 'lucide-react'
@@ -28,9 +28,23 @@ export function CompanyForm({ company, trigger }: CompanyFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [logoFile, setLogoFile] = useState<File | null>(null)
-  const [logoPreview, setLogoPreview] = useState<string | null>(company?.logo_url ?? null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoError, setLogoError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Inicializa o preview no cliente (evita mismatch SSR com blob URLs)
+  useEffect(() => {
+    setMounted(true)
+    setLogoPreview(company?.logo_url ?? null)
+  }, [])
+
+  // Sincroniza preview quando company.logo_url muda (após router.refresh)
+  useEffect(() => {
+    if (!logoFile) {
+      setLogoPreview(company?.logo_url ?? null)
+    }
+  }, [company?.logo_url])
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -96,7 +110,6 @@ export function CompanyForm({ company, trigger }: CompanyFormProps) {
     setOpen(value)
     if (!value) {
       setLogoFile(null)
-      setLogoPreview(company?.logo_url ?? null)
       setLogoError('')
     }
   }
@@ -129,7 +142,7 @@ export function CompanyForm({ company, trigger }: CompanyFormProps) {
             <div className="flex flex-col items-center gap-2">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-muted flex items-center justify-center">
-                  {logoPreview ? (
+                  {mounted && logoPreview ? (
                     <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
                     <span className="text-2xl font-bold text-muted-foreground">{displayLetter}</span>

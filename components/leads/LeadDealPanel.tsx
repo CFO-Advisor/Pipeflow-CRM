@@ -17,22 +17,24 @@ import {
 import { updateDealStage } from '@/app/actions/deals'
 import { STAGE_ORDER, STAGE_LABELS } from '@/lib/deal-stages'
 import { formatCurrency } from '@/lib/utils'
-import type { Deal, DealStage } from '@/types'
+import type { BusinessUnit, Deal, DealStage } from '@/types'
 
 interface LeadDealPanelProps {
   leadId: string
   workspaceId: string
   companyId: string | null
   deals: Deal[]
+  businessUnits?: BusinessUnit[]
 }
 
 const emptyForm = { title: '', value: '', deadline: '', stage: 'new_lead' as DealStage }
 
-export function LeadDealPanel({ leadId, workspaceId, companyId, deals }: LeadDealPanelProps) {
+export function LeadDealPanel({ leadId, workspaceId, companyId, deals, businessUnits = [] }: LeadDealPanelProps) {
   const router = useRouter()
 
   const [showForm, setShowForm] = useState(deals.length === 0)
   const [form, setForm] = useState(emptyForm)
+  const [businessUnitId, setBusinessUnitId] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [savingId, setSavingId] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -89,6 +91,7 @@ export function LeadDealPanel({ leadId, workspaceId, companyId, deals }: LeadDea
       deadline: form.deadline || null,
       assigned_to: user?.id ?? null,
       ...(companyId ? { company_id: companyId } : {}),
+      ...(businessUnitId ? { business_unit_id: businessUnitId } : {}),
     })
 
     if (err) {
@@ -98,6 +101,7 @@ export function LeadDealPanel({ leadId, workspaceId, companyId, deals }: LeadDea
     }
 
     setForm(emptyForm)
+    setBusinessUnitId(null)
     setShowForm(false)
     router.refresh()
     setCreating(false)
@@ -218,6 +222,26 @@ export function LeadDealPanel({ leadId, workspaceId, companyId, deals }: LeadDea
               </Select>
             </div>
           </div>
+
+          {/* Unidade de Negócio — só aparece quando há empresa e BUs disponíveis */}
+          {companyId && businessUnits.filter(bu => bu.company_id === companyId).length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="deal-bu">Unidade de Negócio</Label>
+              <select
+                id="deal-bu"
+                value={businessUnitId ?? ''}
+                onChange={(e) => setBusinessUnitId(e.target.value || null)}
+                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+              >
+                <option value="">Nenhuma</option>
+                {businessUnits
+                  .filter(bu => bu.company_id === companyId)
+                  .map(bu => (
+                    <option key={bu.id} value={bu.id}>{bu.name}</option>
+                  ))}
+              </select>
+            </div>
+          )}
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             {deals.length > 0 && (

@@ -11,13 +11,14 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { LeadForm } from './LeadForm'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import type { Company, Lead } from '@/types'
+import type { Company, BusinessUnit, Lead } from '@/types'
 
 interface LeadsClientProps {
   leads: Lead[]
   workspaceId: string
   planLimitReached: boolean
   companies?: Company[]
+  businessUnits?: BusinessUnit[]
   currentCompanyId?: string | null
 }
 
@@ -26,6 +27,7 @@ export function LeadsClient({
   workspaceId,
   planLimitReached,
   companies = [],
+  businessUnits = [],
   currentCompanyId = null,
 }: LeadsClientProps) {
   const router = useRouter()
@@ -226,6 +228,7 @@ export function LeadsClient({
         workspaceId={workspaceId}
         planLimitReached={planLimitReached}
         companies={companies}
+        businessUnits={businessUnits}
         currentCompanyId={currentCompanyId}
       />
 
@@ -235,6 +238,7 @@ export function LeadsClient({
           open={!!editingLead}
           onOpenChange={(open) => { if (!open) setEditingLead(null) }}
           workspaceId={workspaceId}
+          businessUnits={businessUnits}
           lead={editingLead}
           companies={companies}
         />

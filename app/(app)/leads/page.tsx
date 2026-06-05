@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { LeadsClient } from '@/components/leads/LeadsClient'
-import type { Company } from '@/types'
+import type { Company, BusinessUnit } from '@/types'
 
 export default async function LeadsPage() {
   const supabase = await createClient()
@@ -29,19 +29,15 @@ export default async function LeadsPage() {
   const isMax = workspace.plan === 'max'
   const service = createServiceClient()
 
-  // Empresas do grupo (somente plano MAX)
-  let companies: Company[] = []
-  if (isMax) {
-    const { data } = await service
-      .from('companies')
-      .select('*')
-      .eq('workspace_id', workspaceId)
-      .eq('active', true)
-      .order('name')
-    companies = (data ?? []) as Company[]
-  }
+  // Empresas e unidades de negócio para todos os planos
+  const [{ data: companiesData }, { data: businessUnitsData }] = await Promise.all([
+    service.from('companies').select('*').eq('workspace_id', workspaceId).eq('active', true).order('name'),
+    service.from('business_units').select('*').eq('workspace_id', workspaceId).eq('active', true).order('name'),
+  ])
+  const companies = (companiesData ?? []) as Company[]
+  const businessUnits = (businessUnitsData ?? []) as BusinessUnit[]
 
-  // Filtro de empresa ativo no sidebar
+  // Filtro de empresa ativo no sidebar (somente plano MAX)
   const currentCompanyId = isMax
     ? (cookieStore.get('current_company_id')?.value ?? null)
     : null
@@ -67,6 +63,7 @@ export default async function LeadsPage() {
       workspaceId={workspaceId}
       planLimitReached={planLimitReached}
       companies={companies}
+      businessUnits={businessUnits}
       currentCompanyId={currentCompanyId}
     />
   )

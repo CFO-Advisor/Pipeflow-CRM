@@ -11,7 +11,7 @@ import { ActivityTimeline } from '@/components/leads/ActivityTimeline'
 import { ActivityForm } from '@/components/leads/ActivityForm'
 import { LeadDealPanel } from '@/components/leads/LeadDealPanel'
 import { formatDate } from '@/lib/utils'
-import type { ActivityWithAuthor, Deal } from '@/types'
+import type { ActivityWithAuthor, BusinessUnit, Deal } from '@/types'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -29,7 +29,7 @@ export default async function LeadDetailPage({ params }: Props) {
   const cookieStore = await cookies()
   const workspaceId = cookieStore.get('current_workspace_id')?.value
 
-  const [{ data: lead }, { data: rawActivities }, { data: rawDeals }] = await Promise.all([
+  const [{ data: lead }, { data: rawActivities }, { data: rawDeals }, { data: rawBUs }] = await Promise.all([
     supabase
       .from('leads')
       .select('*')
@@ -47,6 +47,12 @@ export default async function LeadDetailPage({ params }: Props) {
       .eq('lead_id', id)
       .eq('workspace_id', workspaceId ?? '')
       .order('created_at', { ascending: false }),
+    supabase
+      .from('business_units')
+      .select('*')
+      .eq('workspace_id', workspaceId ?? '')
+      .eq('active', true)
+      .order('name'),
   ])
 
   if (!lead) notFound()
@@ -77,6 +83,7 @@ export default async function LeadDetailPage({ params }: Props) {
   })
 
   const deals = (rawDeals ?? []) as Deal[]
+  const businessUnits = (rawBUs ?? []) as BusinessUnit[]
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -151,6 +158,7 @@ export default async function LeadDetailPage({ params }: Props) {
             workspaceId={workspaceId ?? lead.workspace_id}
             companyId={lead.company_id}
             deals={deals}
+            businessUnits={businessUnits}
           />
         </CardContent>
       </Card>

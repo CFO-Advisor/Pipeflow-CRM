@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { DealCard } from './DealCard'
 import { DealForm } from './DealForm'
 import { STAGE_LABELS } from '@/lib/deal-stages'
-import type { DealStage, DealWithLead, Lead } from '@/types'
+import type { BusinessUnit, DealStage, DealWithLead, Lead } from '@/types'
 
 const stageColors: Record<DealStage, { headerColor: string; bgColor: string }> = {
   new_lead: { headerColor: 'bg-teal-600', bgColor: 'bg-teal-50 dark:bg-teal-950/30' },
@@ -25,10 +25,11 @@ interface KanbanColumnProps {
   workspaceId: string
   leads: Pick<Lead, 'id' | 'name'>[]
   companyId?: string | null
+  businessUnits?: BusinessUnit[]
   showCompany?: boolean
 }
 
-export function KanbanColumn({ stage, deals, workspaceId, leads, companyId, showCompany }: KanbanColumnProps) {
+export function KanbanColumn({ stage, deals, workspaceId, leads, companyId, businessUnits, showCompany }: KanbanColumnProps) {
   const [showForm, setShowForm] = useState(false)
   const colors = stageColors[stage]
   const { setNodeRef, isOver } = useDroppable({ id: stage })
@@ -79,6 +80,7 @@ export function KanbanColumn({ stage, deals, workspaceId, leads, companyId, show
         defaultStage={stage}
         leads={leads}
         companyId={companyId}
+        businessUnits={businessUnits}
       />
     </div>
   )

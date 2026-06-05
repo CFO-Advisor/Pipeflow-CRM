@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import type { Company, Lead } from '@/types'
+import type { Company, BusinessUnit, Lead } from '@/types'
 
 interface LeadFormProps {
   open: boolean
@@ -24,6 +24,7 @@ interface LeadFormProps {
   lead?: Lead
   planLimitReached?: boolean
   companies?: Company[]
+  businessUnits?: BusinessUnit[]
   currentCompanyId?: string | null
 }
 
@@ -34,6 +35,7 @@ export function LeadForm({
   lead,
   planLimitReached,
   companies = [],
+  businessUnits = [],
   currentCompanyId = null,
 }: LeadFormProps) {
   const router = useRouter()
@@ -49,6 +51,9 @@ export function LeadForm({
   })
   const [companyId, setCompanyId] = useState<string | null>(
     lead?.company_id ?? currentCompanyId ?? null
+  )
+  const [businessUnitId, setBusinessUnitId] = useState<string | null>(
+    lead?.business_unit_id ?? null
   )
   const [photoPreview, setPhotoPreview] = useState<string | null>(lead?.photo_url ?? null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -108,6 +113,7 @@ export function LeadForm({
     const payload = {
       ...form,
       company_id: companyId ?? null,
+      business_unit_id: businessUnitId ?? null,
     }
 
     if (isEdit) {
@@ -217,21 +223,43 @@ export function LeadForm({
             Clique para adicionar foto (JPG, PNG, WEBP — máx. 5 MB)
           </p>
 
-          {/* ── Empresa do grupo (plano MAX) ── */}
+          {/* ── Empresa + Unidade de Negócio ── */}
           {companies.length > 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="company_group">Empresa do grupo</Label>
-              <select
-                id="company_group"
-                value={companyId ?? ''}
-                onChange={(e) => setCompanyId(e.target.value || null)}
-                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
-              >
-                <option value="">Sem empresa vinculada</option>
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="company_group">Empresa</Label>
+                <select
+                  id="company_group"
+                  value={companyId ?? ''}
+                  onChange={(e) => {
+                    setCompanyId(e.target.value || null)
+                    setBusinessUnitId(null) // limpa BU ao trocar empresa
+                  }}
+                  className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                >
+                  <option value="">Nenhuma</option>
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="business_unit">Unidade de Negócio</Label>
+                <select
+                  id="business_unit"
+                  value={businessUnitId ?? ''}
+                  onChange={(e) => setBusinessUnitId(e.target.value || null)}
+                  disabled={!companyId}
+                  className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                >
+                  <option value="">Nenhuma</option>
+                  {businessUnits
+                    .filter((bu) => bu.company_id === companyId && bu.active)
+                    .map((bu) => (
+                      <option key={bu.id} value={bu.id}>{bu.name}</option>
+                    ))}
+                </select>
+              </div>
             </div>
           )}
 

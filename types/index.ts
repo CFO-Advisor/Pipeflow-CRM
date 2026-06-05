@@ -32,6 +32,15 @@ export interface Company {
   created_at: string
 }
 
+export interface BusinessUnit {
+  id: string
+  workspace_id: string
+  company_id: string
+  name: string
+  active: boolean
+  created_at: string
+}
+
 export interface WorkspaceMember {
   id: string
   workspace_id: string
@@ -64,6 +73,7 @@ export interface Lead {
   id: string
   workspace_id: string
   company_id: string | null
+  business_unit_id: string | null
   name: string
   email: string | null
   phone: string | null
@@ -80,6 +90,7 @@ export interface Deal {
   id: string
   workspace_id: string
   company_id: string | null
+  business_unit_id: string | null
   lead_id: string
   title: string
   value: number

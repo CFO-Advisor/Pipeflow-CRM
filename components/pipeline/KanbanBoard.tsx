@@ -15,16 +15,17 @@ import { KanbanColumn } from './KanbanColumn'
 import { DealCard } from './DealCard'
 import { updateDealStage } from '@/app/actions/deals'
 import { STAGE_ORDER as STAGES } from '@/lib/deal-stages'
-import type { DealStage, DealWithLead, Lead } from '@/types'
+import type { BusinessUnit, DealStage, DealWithLead, Lead } from '@/types'
 
 interface KanbanBoardProps {
   deals: DealWithLead[]
   workspaceId: string
   leads: Pick<Lead, 'id' | 'name'>[]
   companyId?: string | null
+  businessUnits?: BusinessUnit[]
 }
 
-export function KanbanBoard({ deals: initialDeals, workspaceId, leads, companyId }: KanbanBoardProps) {
+export function KanbanBoard({ deals: initialDeals, workspaceId, leads, companyId, businessUnits = [] }: KanbanBoardProps) {
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
 
@@ -95,6 +96,7 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads, companyId
               workspaceId={workspaceId}
               leads={leads}
               companyId={companyId}
+              businessUnits={businessUnits}
               showCompany={!companyId}
             />
           </div>

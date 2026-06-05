@@ -50,14 +50,20 @@ export default async function SettingsPage() {
   const canManageRoles = isAdmin || isMaster
   const memberLimitReached = workspace.plan === 'free' && (memberRows?.length ?? 0) >= 2
 
-  // Para MAX: buscar dados extras (companies, permissões, acesso por empresa)
+  // Buscar companies para todos os planos; extras (permissões, acesso) somente no MAX
   let companies: Company[] = []
   let membersWithExtras: typeof memberRows = memberRows ?? []
 
+  {
+    const service = createServiceClient()
+    const { data: companiesData } = await service
+      .from('companies').select('*').eq('workspace_id', workspaceId).order('name')
+    companies = companiesData ?? []
+  }
+
   if (isMax) {
     const service = createServiceClient()
-    const [{ data: companiesData }, { data: ucaData }, { data: permsData }] = await Promise.all([
-      service.from('companies').select('*').eq('workspace_id', workspaceId).order('name'),
+    const [{ data: ucaData }, { data: permsData }] = await Promise.all([
       service.from('user_company_access').select('*').in(
         'member_id',
         (memberRows ?? []).map((m) => m.id)
@@ -67,8 +73,6 @@ export default async function SettingsPage() {
         (memberRows ?? []).map((m) => m.id)
       ),
     ])
-
-    companies = companiesData ?? []
 
     membersWithExtras = (memberRows ?? []).map((m) => ({
       ...m,
@@ -142,8 +146,8 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Empresas (MAX only) */}
-      {isMax && (
+      {/* Empresas — disponível em todos os planos */}
+      {(
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">

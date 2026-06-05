@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { DealStage, Lead } from '@/types'
+import type { BusinessUnit, DealStage, Lead } from '@/types'
 
 interface DealFormProps {
   open: boolean
@@ -30,9 +30,10 @@ interface DealFormProps {
   defaultStage: DealStage
   leads: Pick<Lead, 'id' | 'name'>[]
   companyId?: string | null
+  businessUnits?: BusinessUnit[]
 }
 
-export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads, companyId }: DealFormProps) {
+export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads, companyId, businessUnits = [] }: DealFormProps) {
   const router = useRouter()
   const [form, setForm] = useState({
     title: '',
@@ -40,6 +41,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
     lead_id: '',
     deadline: '',
   })
+  const [businessUnitId, setBusinessUnitId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -65,6 +67,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
       deadline: form.deadline || undefined,
       assigned_to: user?.id ?? null,
       ...(companyId ? { company_id: companyId } : {}),
+      ...(businessUnitId ? { business_unit_id: businessUnitId } : {}),
     })
 
     if (err) { setError(err.message); setLoading(false); return }
@@ -72,6 +75,7 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
     router.refresh()
     onOpenChange(false)
     setForm({ title: '', value: '', lead_id: '', deadline: '' })
+    setBusinessUnitId(null)
     setLoading(false)
   }
 
@@ -136,6 +140,24 @@ export function DealForm({ open, onOpenChange, workspaceId, defaultStage, leads,
               />
             </div>
           </div>
+          {companyId && businessUnits.filter(bu => bu.company_id === companyId && bu.active).length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="business-unit">Unidade de Negócio</Label>
+              <select
+                id="business-unit"
+                value={businessUnitId ?? ''}
+                onChange={(e) => setBusinessUnitId(e.target.value || null)}
+                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+              >
+                <option value="">Nenhuma</option>
+                {businessUnits
+                  .filter(bu => bu.company_id === companyId && bu.active)
+                  .map(bu => (
+                    <option key={bu.id} value={bu.id}>{bu.name}</option>
+                  ))}
+              </select>
+            </div>
+          )}
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancelar

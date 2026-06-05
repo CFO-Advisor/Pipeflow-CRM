@@ -270,3 +270,17 @@ export interface Commission {
   paid_at: string | null
   created_at: string
 }
+
+export type BonusType = 'fixed' | 'salary_pct' | 'revenue_pct'
+
+export interface GoalBonusRule {
+  id: string
+  workspace_id: string
+  name: string
+  trigger_pct: number
+  bonus_type: BonusType
+  bonus_value: number
+  applies_to: 'all' | 'seller' | 'manager' | 'director' | 'master'
+  active: boolean
+  created_at: string
+}

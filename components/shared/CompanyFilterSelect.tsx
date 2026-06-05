@@ -29,7 +29,15 @@ export function CompanyFilterSelect({ companies, currentCompanyId }: CompanyFilt
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent transition-colors">
-        <Building className="w-3.5 h-3.5 text-muted-foreground" />
+        {current?.logo_url ? (
+          <img
+            src={current.logo_url}
+            alt={current.name}
+            className="w-3.5 h-3.5 rounded-sm object-contain flex-shrink-0"
+          />
+        ) : (
+          <Building className="w-3.5 h-3.5 text-muted-foreground" />
+        )}
         <span className="truncate max-w-[160px]">
           {current ? current.name : 'Todas as empresas'}
         </span>
@@ -53,7 +61,15 @@ export function CompanyFilterSelect({ companies, currentCompanyId }: CompanyFilt
 
         {activeCompanies.map((company) => (
           <DropdownMenuItem key={company.id} onClick={() => switchCompany(company.id)}>
-            <Building className="w-4 h-4 text-muted-foreground" />
+            {company.logo_url ? (
+              <img
+                src={company.logo_url}
+                alt={company.name}
+                className="w-4 h-4 rounded-sm object-contain flex-shrink-0"
+              />
+            ) : (
+              <Building className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            )}
             <span className="flex-1 truncate">{company.name}</span>
             {company.id === currentCompanyId && <Check className="w-3.5 h-3.5 text-primary" />}
           </DropdownMenuItem>

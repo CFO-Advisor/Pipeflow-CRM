@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { MetasClient } from '@/components/metas/MetasClient'
-import type { SalesGoal, Commission, Company } from '@/types'
+import type { SalesGoal, Commission, Company, CommissionRule, GoalBonusRule } from '@/types'
 
 export default async function MetasPage() {
   const supabase = await createClient()
@@ -18,12 +18,14 @@ export default async function MetasPage() {
 
   const service = createServiceClient()
 
-  const [{ data: memberRows }, { data: goalsData }, { data: commissionsData }, { data: authData }, { data: companiesData }] = await Promise.all([
+  const [{ data: memberRows }, { data: goalsData }, { data: commissionsData }, { data: authData }, { data: companiesData }, { data: rulesData }, { data: bonusRulesData }] = await Promise.all([
     service.from('workspace_members').select('id, user_id, role, sales_role').eq('workspace_id', workspaceId),
     service.from('sales_goals').select('*').eq('workspace_id', workspaceId).order('period_start', { ascending: false }),
     service.from('commissions').select('*, deal:deals(id, title, value), rule:commission_rules(name, percentage)').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     service.auth.admin.listUsers({ perPage: 1000 }),
     service.from('companies').select('*').eq('workspace_id', workspaceId).order('name'),
+    service.from('commission_rules').select('*').eq('workspace_id', workspaceId).order('created_at'),
+    service.from('goal_bonus_rules').select('*').eq('workspace_id', workspaceId).order('trigger_pct'),
   ])
   const companies = (companiesData ?? []) as Company[]
 
@@ -62,6 +64,8 @@ export default async function MetasPage() {
       members={members}
       goals={goalsWithProgress as (SalesGoal & { achieved: number; percentage: number })[]}
       commissions={(commissionsData ?? []) as (Commission & { deal?: { id: string; title: string; value: number } | null; rule?: { name: string; percentage: number } | null })[]}
+      commissionRules={(rulesData ?? []) as CommissionRule[]}
+      goalBonusRules={(bonusRulesData ?? []) as GoalBonusRule[]}
       canManage={canManage}
       companies={companies}
       currentCompanyId={companyId}

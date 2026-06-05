@@ -20,7 +20,7 @@ export async function POST(
 
   const { data: proposal } = await service
     .from('proposals')
-    .select('id, signed_by_client_at')
+    .select('id, status, deal_id, lead_id, title, signed_by_client_at')
     .eq('id', id)
     .eq('workspace_id', workspaceId)
     .single()
@@ -57,12 +57,63 @@ export async function POST(
       signed_pdf_path: filePath,
       signed_by_seller_at: new Date().toISOString(),
       status: 'awaiting_signature',
-      // Resetar assinatura do cliente se ele já havia assinado
-      ...(clientHadSigned && {
-        signed_by_client_at: null,
-      }),
+      ...(clientHadSigned && { signed_by_client_at: null }),
     })
     .eq('id', id)
+
+  // Atualizar deal e registrar atividade apenas na primeira vez que o vendedor assina
+  // (quando a proposta ainda estava em rascunho — primeiro envio real ao cliente)
+  if (proposal.status === 'draft') {
+    const dealId = proposal.deal_id
+    let companyId: string | null = null
+    let effectiveLeadId = proposal.lead_id
+
+    if (dealId) {
+      const { data: deal, error: dealFetchErr } = await service
+        .from('deals')
+        .select('stage, company_id, lead_id')
+        .eq('id', dealId)
+        .single()
+
+      if (dealFetchErr) {
+        console.error('[upload-signed] erro ao buscar deal:', dealFetchErr.message)
+      }
+
+      if (deal) {
+        companyId = deal.company_id ?? null
+        effectiveLeadId = effectiveLeadId ?? deal.lead_id
+
+        const closedStages = ['closed_won', 'closed_lost']
+        if (!closedStages.includes(deal.stage)) {
+          const { error: stageErr } = await service
+            .from('deals')
+            .update({ stage: 'proposal_sent' })
+            .eq('id', dealId)
+
+          if (stageErr) {
+            console.error('[upload-signed] erro ao atualizar estágio do deal:', stageErr.message)
+          }
+        }
+      }
+    }
+
+    if (effectiveLeadId) {
+      const { error: actErr } = await service.from('activities').insert({
+        workspace_id: workspaceId,
+        lead_id: effectiveLeadId,
+        deal_id: dealId ?? null,
+        company_id: companyId,
+        author_id: user.id,
+        type: 'proposal',
+        description: `Proposta enviada: ${proposal.title}`,
+        scheduled_at: new Date().toISOString().slice(0, 10),
+      })
+
+      if (actErr) {
+        console.error('[upload-signed] erro ao registrar atividade:', actErr.message)
+      }
+    }
+  }
 
   return NextResponse.json({
     success: true,

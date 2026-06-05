@@ -3,6 +3,7 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   Font,
 } from '@react-pdf/renderer'
@@ -155,9 +156,10 @@ function formatDate(dateStr: string | null) {
 interface ProposalPDFProps {
   proposal: Proposal & { items: NonNullable<Proposal['items']> }
   workspaceName?: string
+  companyLogoUrl?: string | null
 }
 
-export function ProposalPDF({ proposal, workspaceName }: ProposalPDFProps) {
+export function ProposalPDF({ proposal, workspaceName, companyLogoUrl }: ProposalPDFProps) {
   const items = proposal.items ?? []
 
   return (
@@ -165,8 +167,20 @@ export function ProposalPDF({ proposal, workspaceName }: ProposalPDFProps) {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{proposal.title}</Text>
-          {workspaceName && <Text style={styles.subtitle}>{workspaceName}</Text>}
+          {companyLogoUrl ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              <Image src={companyLogoUrl} style={{ width: 60, height: 60, objectFit: 'contain' }} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>{proposal.title}</Text>
+                {workspaceName && <Text style={styles.subtitle}>{workspaceName}</Text>}
+              </View>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.title}>{proposal.title}</Text>
+              {workspaceName && <Text style={styles.subtitle}>{workspaceName}</Text>}
+            </>
+          )}
         </View>
 
         {/* Metadados */}

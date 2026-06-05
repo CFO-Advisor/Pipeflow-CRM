@@ -28,6 +28,7 @@ export interface Company {
   workspace_id: string
   name: string
   cnpj: string | null
+  logo_url: string | null
   active: boolean
   created_at: string
 }

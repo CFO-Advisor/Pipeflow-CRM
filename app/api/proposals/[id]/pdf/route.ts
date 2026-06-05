@@ -30,13 +30,20 @@ export async function GET(
 
   if (!proposal) return NextResponse.json({ error: 'Proposta não encontrada.' }, { status: 404 })
 
-  const { data: workspace } = await service.from('workspaces').select('name').eq('id', workspaceId).single()
+  const [{ data: workspace }, { data: deal }] = await Promise.all([
+    service.from('workspaces').select('name').eq('id', workspaceId).single(),
+    service.from('deals').select('company:companies(logo_url)').eq('id', proposal.deal_id).single(),
+  ])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const companyLogoUrl: string | null = (deal?.company as any)?.logo_url ?? null
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buffer = await renderToBuffer(
     React.createElement(ProposalPDF as any, {
       proposal: { ...proposal, items: proposal.items ?? [] },
       workspaceName: workspace?.name,
+      companyLogoUrl,
     }) as any
   )
 

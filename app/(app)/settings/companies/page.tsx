@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { ArrowLeft, Building2, Layers, Plus, Pencil, ToggleLeft, ToggleRight, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Building2, Layers, Plus, Pencil, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -71,7 +71,7 @@ export default async function CompaniesPage() {
         {canManage && (
           atLimit ? (
             <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 flex-shrink-0 bg-amber-50 dark:bg-amber-950/30">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>Plano {plan.toUpperCase()} — limite de 1 empresa. <span className="font-semibold">Assine o MAX para mais.</span></span>
             </div>
           ) : (

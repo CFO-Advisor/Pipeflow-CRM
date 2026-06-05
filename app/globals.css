@@ -126,6 +126,18 @@
   }
   html {
     @apply font-sans;
+    color-scheme: light;
+  }
+
+  /* dark mode: instrui o browser a renderizar controles nativos (select/option) em dark */
+  .dark {
+    color-scheme: dark;
+  }
+
+  /* fallback explícito para options — garante legibilidade em todos os browsers */
+  .dark select option {
+    background-color: oklch(0.205 0 0);
+    color: oklch(0.985 0 0);
   }
 }
 

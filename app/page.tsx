@@ -21,9 +21,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/25 flex-shrink-0">
-              <span className="text-white text-sm font-bold">P</span>
+              <span className="text-white text-sm font-bold">S</span>
             </div>
-            <span className="text-xl font-bold tracking-tight">PipeFlow</span>
+            <span className="text-xl font-bold tracking-tight">Sales Flow</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
@@ -160,7 +160,7 @@ export default function LandingPage() {
               Tudo que seu time de vendas precisa
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-lg leading-relaxed">
-              Do primeiro contato ao fechamento, o PipeFlow acompanha cada etapa do seu processo comercial.
+              Do primeiro contato ao fechamento, o Sales Flow acompanha cada etapa do seu processo comercial.
             </p>
           </div>
 
@@ -563,9 +563,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-5 text-sm text-muted-foreground">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-sm">
-              <span className="text-white text-xs font-bold">P</span>
+              <span className="text-white text-xs font-bold">S</span>
             </div>
-            <span className="font-semibold text-foreground text-base">PipeFlow</span>
+            <span className="font-semibold text-foreground text-base">Sales Flow</span>
           </div>
 
           <div className="flex items-center gap-7">
@@ -574,7 +574,7 @@ export default function LandingPage() {
             <Link href="/login" className="hover:text-foreground transition-colors">Entrar</Link>
           </div>
 
-          <p>© 2026 PipeFlow. Todos os direitos reservados.</p>
+          <p>© 2026 Sales Flow. Todos os direitos reservados.</p>
         </div>
       </footer>
 

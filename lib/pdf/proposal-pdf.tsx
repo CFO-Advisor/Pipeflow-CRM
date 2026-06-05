@@ -250,7 +250,7 @@ export function ProposalPDF({ proposal, workspaceName }: ProposalPDFProps) {
 
         {/* Footer */}
         <Text style={styles.footer}>
-          Proposta gerada pelo PipeFlow CRM · {new Date().toLocaleDateString('pt-BR')}
+          Proposta gerada pelo Sales Flow CRM · {new Date().toLocaleDateString('pt-BR')}
         </Text>
       </Page>
     </Document>

@@ -50,9 +50,9 @@ export function MobileSidebar({
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-sidebar-primary-foreground text-sm font-bold">P</span>
+              <span className="text-sidebar-primary-foreground text-sm font-bold">S</span>
             </div>
-            <span className="text-xl font-bold flex-1">PipeFlow</span>
+            <span className="text-xl font-bold flex-1">Sales Flow</span>
             <ThemeToggle />
             <button
               onClick={onClose}

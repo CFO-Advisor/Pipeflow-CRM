@@ -77,11 +77,11 @@ export function SidebarShell({
             !hovered && 'justify-center',
           )}>
             <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-sidebar-primary-foreground text-sm font-bold">P</span>
+              <span className="text-sidebar-primary-foreground text-sm font-bold">S</span>
             </div>
             {hovered && (
               <>
-                <span className="text-xl font-bold flex-1 whitespace-nowrap overflow-hidden">PipeFlow</span>
+                <span className="text-xl font-bold flex-1 whitespace-nowrap overflow-hidden">Sales Flow</span>
                 <ThemeToggle />
               </>
             )}
@@ -176,9 +176,9 @@ export function SidebarShell({
           </button>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-sidebar-primary rounded flex items-center justify-center">
-              <span className="text-sidebar-primary-foreground text-xs font-bold">P</span>
+              <span className="text-sidebar-primary-foreground text-xs font-bold">S</span>
             </div>
-            <span className="font-semibold text-sm">PipeFlow</span>
+            <span className="font-semibold text-sm">Sales Flow</span>
           </div>
         </header>
 

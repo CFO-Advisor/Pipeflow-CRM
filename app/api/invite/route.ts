@@ -76,12 +76,12 @@ export async function POST(req: NextRequest) {
   try {
     await Promise.race([
       resend.emails.send({
-        from: 'PipeFlow <noreply@pipeflow.app>',
+        from: 'Sales Flow <noreply@salesflow.app>',
         to: email,
-        subject: `Você foi convidado para ${safeName} no PipeFlow`,
+        subject: `Você foi convidado para ${safeName} no Sales Flow`,
         html: `
           <h2>Você foi convidado!</h2>
-          <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no PipeFlow CRM.</p>
+          <p>Você recebeu um convite para colaborar no workspace <strong>${safeName}</strong> no Sales Flow CRM.</p>
           <p>Clique no botão abaixo para criar sua conta e entrar automaticamente no workspace:</p>
           <p>
             <a href="${appUrl}/register" style="background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">

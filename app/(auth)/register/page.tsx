@@ -86,9 +86,9 @@ export default function RegisterPage() {
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">P</span>
+                <span className="text-white text-sm font-bold">S</span>
               </div>
-              <span className="text-xl font-bold text-foreground">PipeFlow</span>
+              <span className="text-xl font-bold text-foreground">Sales Flow</span>
             </div>
             <div className="flex items-center justify-center py-2">
               <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -141,9 +141,9 @@ export default function RegisterPage() {
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">P</span>
+              <span className="text-white text-sm font-bold">S</span>
             </div>
-            <span className="text-xl font-bold text-foreground">PipeFlow</span>
+            <span className="text-xl font-bold text-foreground">Sales Flow</span>
           </div>
           <CardTitle className="text-2xl">
             {existingUser ? 'Criar workspace' : 'Criar conta grátis'}

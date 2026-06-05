@@ -29,14 +29,14 @@ export async function POST(req: NextRequest) {
   try {
     await Promise.race([
       resend.emails.send({
-        from: 'PipeFlow <noreply@pipeflow.app>',
+        from: 'Sales Flow <noreply@salesflow.app>',
         to: leadEmail,
         subject: emailSubject,
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1e293b">
             <p style="font-size:15px;line-height:1.6">${safeDescription}</p>
             <hr style="margin-top:32px;border:none;border-top:1px solid #e2e8f0">
-            <p style="color:#94a3b8;font-size:12px;margin-top:8px">Enviado via PipeFlow CRM</p>
+            <p style="color:#94a3b8;font-size:12px;margin-top:8px">Enviado via Sales Flow CRM</p>
           </div>
         `,
       }),

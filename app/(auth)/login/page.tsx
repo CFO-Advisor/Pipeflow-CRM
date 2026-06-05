@@ -43,9 +43,9 @@ function LoginForm() {
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">P</span>
+              <span className="text-white text-sm font-bold">S</span>
             </div>
-            <span className="text-xl font-bold text-foreground">PipeFlow</span>
+            <span className="text-xl font-bold text-foreground">Sales Flow</span>
           </div>
           <CardTitle className="text-2xl">Entrar</CardTitle>
           <CardDescription>Acesse sua conta para continuar</CardDescription>

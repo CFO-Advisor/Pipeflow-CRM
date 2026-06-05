@@ -45,7 +45,7 @@ export default async function PropostaPublicPage({
         {/* Header */}
         <div className="text-center space-y-2 mb-8">
           <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl font-bold">P</span>
+            <span className="text-white text-xl font-bold">S</span>
           </div>
           <h1 className="text-3xl font-bold text-foreground">{proposal.title}</h1>
           <div className="flex items-center justify-center gap-2">
@@ -143,7 +143,7 @@ export default async function PropostaPublicPage({
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
-          Proposta gerada pelo PipeFlow CRM
+          Proposta gerada pelo Sales Flow CRM
         </p>
       </div>
     </div>

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PipeFlow CRM",
+  title: "Sales Flow CRM",
   description: "Organize suas vendas, feche mais negócios",
 };
 

@@ -24,16 +24,8 @@ export default async function PipelinePage() {
     .eq('id', workspaceId)
     .single()
 
-  // Filtro de empresa para plano MAX (RLS já garante segurança; cookie é apenas UX)
-  const companyId =
-    workspace?.plan === 'max'
-      ? (cookieStore.get('current_company_id')?.value ?? null)
-      : null
-
-  const businessUnitId =
-    workspace?.plan === 'max'
-      ? (cookieStore.get('current_business_unit_id')?.value ?? null)
-      : null
+  const companyId = cookieStore.get('current_company_id')?.value ?? null
+  const businessUnitId = cookieStore.get('current_business_unit_id')?.value ?? null
 
   let dealsQuery = supabase
     .from('deals')

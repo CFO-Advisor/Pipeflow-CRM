@@ -61,14 +61,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   businessUnits = (busData ?? []) as BusinessUnit[]
 
-  // CompanySwitcher (filtragem por empresa) permanece exclusivo do plano MAX
-  if (currentWorkspace.plan === 'max') {
+  // Filtro por empresa e BU disponível para todos os planos
+  if (companies.length > 0) {
     currentCompanyId = cookieStore.get('current_company_id')?.value ?? null
     if (currentCompanyId && !companies.find((c) => c.id === currentCompanyId)) {
       currentCompanyId = null
     }
+  }
 
-    // BusinessUnitSwitcher também exclusivo do plano MAX
+  if (businessUnits.length > 0) {
     currentBusinessUnitId = cookieStore.get('current_business_unit_id')?.value ?? null
     if (currentBusinessUnitId && !businessUnits.find((bu) => bu.id === currentBusinessUnitId)) {
       currentBusinessUnitId = null

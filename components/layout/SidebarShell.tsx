@@ -88,12 +88,12 @@ export function SidebarShell({
           {hovered ? (
             <>
               <WorkspaceSwitcher workspaces={workspaces} currentWorkspace={currentWorkspace} />
-              {currentWorkspace.plan === 'max' && companies.length > 0 && (
+              {companies.length > 0 && (
                 <div className="mt-1">
                   <CompanySwitcher companies={companies} currentCompanyId={currentCompanyId} />
                 </div>
               )}
-              {currentWorkspace.plan === 'max' && currentCompanyId && businessUnits.filter(bu => bu.company_id === currentCompanyId && bu.active).length > 0 && (
+              {currentCompanyId && businessUnits.filter(bu => bu.company_id === currentCompanyId && bu.active).length > 0 && (
                 <div className="mt-1">
                   <BusinessUnitSwitcher
                     companies={companies}

@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { ArrowLeft, Download, Send, Copy, Upload } from 'lucide-react'
+import { ArrowLeft, FileCheck } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -130,11 +130,24 @@ export default async function PropostaDetailPage({
               signedAt={p.signed_by_seller_at}
               hasPdf={!!p.signed_pdf_path}
             />
-            <div className="border border-border rounded-lg p-4 space-y-2">
+            <div className="border border-border rounded-lg p-4 space-y-3">
               <p className="text-sm font-semibold">Cliente</p>
-              {p.signed_by_client_at
-                ? <p className="text-xs text-green-600">✓ Assinado em {new Date(p.signed_by_client_at).toLocaleDateString('pt-BR')}</p>
-                : <p className="text-xs text-muted-foreground">Aguardando assinatura do cliente</p>}
+              {p.signed_by_client_at ? (
+                <>
+                  <p className="text-xs text-green-600">✓ Assinado em {new Date(p.signed_by_client_at).toLocaleDateString('pt-BR')}</p>
+                  <a
+                    href={`/api/proposals/${p.id}/download-client-signed`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 hover:underline"
+                  >
+                    <FileCheck className="w-3.5 h-3.5" />
+                    Baixar PDF assinado
+                  </a>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">Aguardando assinatura do cliente</p>
+              )}
             </div>
           </div>
         </CardContent>

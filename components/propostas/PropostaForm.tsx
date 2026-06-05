@@ -13,8 +13,14 @@ import type { ProposalTemplate } from '@/types'
 
 interface ItemRow {
   description: string
-  quantity: number
-  unit_price: number
+  quantity: string
+  unit_price: string
+}
+
+function parseDecimal(v: string): number {
+  const normalized = v.replace(',', '.').replace(/[^\d.]/g, '')
+  const parsed = parseFloat(normalized)
+  return isNaN(parsed) ? 0 : parsed
 }
 
 interface DealOption {
@@ -50,7 +56,7 @@ export function PropostaForm({ deals, templates, companies }: PropostaFormProps)
     valid_until: '',
     notes: '',
   })
-  const [items, setItems] = useState<ItemRow[]>([{ description: '', quantity: 1, unit_price: 0 }])
+  const [items, setItems] = useState<ItemRow[]>([{ description: '', quantity: '1', unit_price: '' }])
 
   const [selectedLeadCompany, setSelectedLeadCompany] = useState('')
 
@@ -85,22 +91,26 @@ export function PropostaForm({ deals, templates, companies }: PropostaFormProps)
   function loadTemplate(templateId: string) {
     const tmpl = templates.find(t => t.id === templateId)
     if (!tmpl) return
-    setItems(tmpl.items.map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price })))
+    setItems(tmpl.items.map(i => ({
+      description: i.description,
+      quantity: String(i.quantity),
+      unit_price: String(i.unit_price),
+    })))
   }
 
   function addItem() {
-    setItems(prev => [...prev, { description: '', quantity: 1, unit_price: 0 }])
+    setItems(prev => [...prev, { description: '', quantity: '1', unit_price: '' }])
   }
 
   function removeItem(idx: number) {
     setItems(prev => prev.filter((_, i) => i !== idx))
   }
 
-  function updateItem(idx: number, field: keyof ItemRow, value: string | number) {
+  function updateItem(idx: number, field: keyof ItemRow, value: string) {
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item))
   }
 
-  const total = items.reduce((sum, i) => sum + (i.quantity * i.unit_price), 0)
+  const total = items.reduce((sum, i) => sum + (parseDecimal(i.quantity) * parseDecimal(i.unit_price)), 0)
 
   const selectedDeal = deals.find(d => d.id === form.deal_id)
 
@@ -115,7 +125,14 @@ export function PropostaForm({ deals, templates, companies }: PropostaFormProps)
     const res = await fetch('/api/proposals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, items }),
+      body: JSON.stringify({
+        ...form,
+        items: items.map(i => ({
+          description: i.description,
+          quantity: parseDecimal(i.quantity),
+          unit_price: parseDecimal(i.unit_price),
+        })),
+      }),
     })
 
     const data = await res.json()
@@ -267,21 +284,29 @@ export function PropostaForm({ deals, templates, companies }: PropostaFormProps)
               <div className="col-span-2 space-y-1">
                 {idx === 0 && <Label className="text-xs text-muted-foreground">Qtd</Label>}
                 <Input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={item.quantity}
-                  onChange={e => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                  onChange={e => updateItem(idx, 'quantity', e.target.value)}
+                  onBlur={e => {
+                    const v = parseDecimal(e.target.value)
+                    updateItem(idx, 'quantity', v > 0 ? String(v) : '1')
+                  }}
+                  placeholder="1"
                 />
               </div>
               <div className="col-span-3 space-y-1">
                 {idx === 0 && <Label className="text-xs text-muted-foreground">Valor unit.</Label>}
                 <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={item.unit_price}
-                  onChange={e => updateItem(idx, 'unit_price', parseFloat(e.target.value) || 0)}
+                  onChange={e => updateItem(idx, 'unit_price', e.target.value)}
+                  onBlur={e => {
+                    const v = parseDecimal(e.target.value)
+                    updateItem(idx, 'unit_price', v > 0 ? v.toFixed(2).replace('.', ',') : '')
+                  }}
+                  placeholder="0,00"
                 />
               </div>
               <div className="col-span-1">

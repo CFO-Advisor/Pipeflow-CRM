@@ -82,18 +82,41 @@ export async function PATCH(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Registrar atividade no lead quando proposta é marcada como enviada
-  if (status === 'sent' && result.proposal.status !== 'sent' && result.proposal.lead_id) {
-    await service.from('activities').insert({
-      workspace_id: result.workspaceId,
-      lead_id: result.proposal.lead_id,
-      company_id: result.proposal.deal_id
-        ? (await service.from('deals').select('company_id').eq('id', result.proposal.deal_id).single()).data?.company_id ?? null
-        : null,
-      author_id: result.user.id,
-      type: 'proposal',
-      description: `Proposta enviada: ${updated.title}`,
-    })
+  // Quando proposta é marcada como enviada: atualizar deal + registrar atividade
+  if (status === 'sent' && result.proposal.status !== 'sent') {
+    const dealId = result.proposal.deal_id
+
+    // 1. Avançar estágio do deal para "Proposta Enviada"
+    if (dealId) {
+      const { data: deal } = await service
+        .from('deals')
+        .select('stage, company_id')
+        .eq('id', dealId)
+        .single()
+
+      // Só avança se ainda não passou desta etapa
+      const advanceable = ['new_lead', 'contacted']
+      if (deal && advanceable.includes(deal.stage)) {
+        await service
+          .from('deals')
+          .update({ stage: 'proposal_sent' })
+          .eq('id', dealId)
+      }
+
+      // 2. Registrar atividade vinculada ao negócio e ao lead
+      if (result.proposal.lead_id) {
+        await service.from('activities').insert({
+          workspace_id: result.workspaceId,
+          lead_id: result.proposal.lead_id,
+          deal_id: dealId,
+          company_id: deal?.company_id ?? null,
+          author_id: result.user.id,
+          type: 'proposal',
+          description: `Proposta enviada: ${updated.title}`,
+          scheduled_at: new Date().toISOString().slice(0, 10),
+        })
+      }
+    }
   }
 
   // Substituir itens se fornecidos

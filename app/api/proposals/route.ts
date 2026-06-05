@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       author_id: user.id,
       type: 'proposal',
       description: `Proposta criada: ${title.trim()}`,
+      scheduled_at: new Date().toISOString().slice(0, 10),
     })
   }
 

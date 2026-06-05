@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getCachedAuthUsers } from '@/lib/cached-queries'
 import { MetasClient } from '@/components/metas/MetasClient'
 import type { SalesGoal, Commission, Company, CommissionRule, GoalBonusRule } from '@/types'
 
@@ -18,18 +19,18 @@ export default async function MetasPage() {
 
   const service = createServiceClient()
 
-  const [{ data: memberRows }, { data: goalsData }, { data: commissionsData }, { data: authData }, { data: companiesData }, { data: rulesData }, { data: bonusRulesData }] = await Promise.all([
+  const [{ data: memberRows }, { data: goalsData }, { data: commissionsData }, { data: companiesData }, { data: rulesData }, { data: bonusRulesData }, authUsers] = await Promise.all([
     service.from('workspace_members').select('id, user_id, role, sales_role').eq('workspace_id', workspaceId),
     service.from('sales_goals').select('*').eq('workspace_id', workspaceId).order('period_start', { ascending: false }),
     service.from('commissions').select('*, deal:deals(id, title, value), rule:commission_rules(name, percentage)').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
-    service.auth.admin.listUsers({ perPage: 1000 }),
-    service.from('companies').select('*').eq('workspace_id', workspaceId).order('name'),
+    service.from('companies').select('id, name, cnpj, logo_url, active, workspace_id, created_at').eq('workspace_id', workspaceId).order('name'),
     service.from('commission_rules').select('*').eq('workspace_id', workspaceId).order('created_at'),
     service.from('goal_bonus_rules').select('*').eq('workspace_id', workspaceId).order('trigger_pct'),
+    getCachedAuthUsers(),
   ])
   const companies = (companiesData ?? []) as Company[]
 
-  const userMap = new Map((authData?.users ?? []).map(u => [u.id, { email: u.email ?? '', name: u.user_metadata?.full_name as string | undefined }]))
+  const userMap = new Map(authUsers.map(u => [u.id, { email: u.email ?? '', name: u.user_metadata?.full_name as string | undefined }]))
   const members = (memberRows ?? []).map(m => {
     const auth = m.user_id ? userMap.get(m.user_id) : null
     return { id: m.id, user_id: m.user_id, role: m.role, sales_role: m.sales_role, email: auth?.email ?? '', name: auth?.name }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useDeferredValue } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Search, Building2, Mail, Phone, Trash2, Users, Layers, Pencil } from 'lucide-react'
@@ -36,14 +36,23 @@ export function LeadsClient({
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
-  const companyMap = Object.fromEntries(companies.map((c) => [c.id, c.name]))
+  const deferredSearch = useDeferredValue(search)
 
-  const filtered = initialLeads.filter(
-    (l) =>
-      l.name.toLowerCase().includes(search.toLowerCase()) ||
-      (l.company ?? '').toLowerCase().includes(search.toLowerCase()) ||
-      (l.email ?? '').toLowerCase().includes(search.toLowerCase())
+  const companyMap = useMemo(
+    () => Object.fromEntries(companies.map((c) => [c.id, c.name])),
+    [companies]
   )
+
+  const filtered = useMemo(() => {
+    const q = deferredSearch.toLowerCase()
+    if (!q) return initialLeads
+    return initialLeads.filter(
+      (l) =>
+        l.name.toLowerCase().includes(q) ||
+        (l.company ?? '').toLowerCase().includes(q) ||
+        (l.email ?? '').toLowerCase().includes(q)
+    )
+  }, [initialLeads, deferredSearch])
 
   async function handleDeleteConfirmed() {
     if (!confirmDeleteId) return

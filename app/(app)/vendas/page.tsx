@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getCachedAuthUsers } from '@/lib/cached-queries'
 import { VendasClient } from '@/components/vendas/VendasClient'
 import type { BusinessUnit, Company, Deal, Lead } from '@/types'
 
@@ -34,10 +35,10 @@ export default async function VendasPage() {
     .select('id, user_id, role, sales_role')
     .eq('workspace_id', workspaceId)
 
-  // Enriquecer com dados do auth
-  const { data: authData } = await service.auth.admin.listUsers({ perPage: 1000 })
+  // Enriquecer com dados do auth (cacheado por 5 min)
+  const authUsers = await getCachedAuthUsers()
   const userMap = new Map(
-    (authData?.users ?? []).map((u) => [
+    authUsers.map((u) => [
       u.id,
       {
         email: u.email ?? '',
@@ -63,11 +64,13 @@ export default async function VendasPage() {
     .from('deals')
     .select('id, assigned_to, stage, value, title')
     .eq('workspace_id', workspaceId)
+    .limit(500)
 
   let leadsQuery = service
     .from('leads')
     .select('id, assigned_to, status')
     .eq('workspace_id', workspaceId)
+    .limit(500)
 
   if (companyId) {
     dealsQuery = dealsQuery.eq('company_id', companyId)

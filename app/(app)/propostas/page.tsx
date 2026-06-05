@@ -22,10 +22,11 @@ export default async function PropostasPage() {
       .from('proposals')
       .select('*, items:proposal_items(*), lead:leads(name, company), deal:deals(lead:leads(name, company))')
       .eq('workspace_id', workspaceId)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(100),
     service
       .from('companies')
-      .select('*')
+      .select('id, name, cnpj, logo_url, active, workspace_id, created_at')
       .eq('workspace_id', workspaceId)
       .order('name'),
   ])

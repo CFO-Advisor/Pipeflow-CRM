@@ -47,6 +47,7 @@ export default async function LeadsPage() {
     .select('*')
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
+    .limit(100)
 
   if (currentCompanyId) {
     query = query.eq('company_id', currentCompanyId)

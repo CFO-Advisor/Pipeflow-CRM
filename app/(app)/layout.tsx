@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getCachedCompanies, getCachedBusinessUnits } from '@/lib/cached-queries'
 import { SidebarShell } from '@/components/layout/SidebarShell'
 import type { Workspace, Company, BusinessUnit } from '@/types'
 
@@ -37,29 +38,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(`/api/workspace/activate?id=${currentWorkspace.id}&next=/dashboard`)
   }
 
-  let companies: Company[] = []
   let currentCompanyId: string | null = null
-  let businessUnits: BusinessUnit[] = []
   let currentBusinessUnitId: string | null = null
 
-  // Carrega empresas para todos os planos
-  const { data: companiesData } = await service
-    .from('companies')
-    .select('*')
-    .eq('workspace_id', currentWorkspace.id)
-    .order('name')
-
-  companies = (companiesData ?? []) as Company[]
-
-  // Carrega unidades de negócio para todos os planos
-  const { data: busData } = await service
-    .from('business_units')
-    .select('*')
-    .eq('workspace_id', currentWorkspace.id)
-    .eq('active', true)
-    .order('name')
-
-  businessUnits = (busData ?? []) as BusinessUnit[]
+  // Empresas e BUs com cache de 30 s — evita re-fetch em cada navegação
+  const [companies, businessUnits] = await Promise.all([
+    getCachedCompanies(currentWorkspace.id),
+    getCachedBusinessUnits(currentWorkspace.id),
+  ])
 
   // Filtro por empresa e BU disponível para todos os planos
   if (companies.length > 0) {

@@ -4,13 +4,25 @@ import { Users, Briefcase, TrendingUp, DollarSign } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/MetricCard'
+import dynamic from 'next/dynamic'
 import { FunnelChart } from '@/components/dashboard/FunnelChart'
 import { UpcomingDeals } from '@/components/dashboard/UpcomingDeals'
 import { WonLostDonut } from '@/components/dashboard/WonLostDonut'
 import { DealsAtRisk } from '@/components/dashboard/DealsAtRisk'
-import { ConversionTrendChart } from '@/components/dashboard/ConversionTrendChart'
-import { MonthlyRevenueChart } from '@/components/dashboard/MonthlyRevenueChart'
-import { ActivityDistributionChart } from '@/components/dashboard/ActivityDistributionChart'
+import { Skeleton } from '@/components/ui/skeleton'
+
+const ConversionTrendChart = dynamic(
+  () => import('@/components/dashboard/ConversionTrendChart').then((m) => ({ default: m.ConversionTrendChart })),
+  { ssr: false, loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
+)
+const MonthlyRevenueChart = dynamic(
+  () => import('@/components/dashboard/MonthlyRevenueChart').then((m) => ({ default: m.MonthlyRevenueChart })),
+  { ssr: false, loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
+)
+const ActivityDistributionChart = dynamic(
+  () => import('@/components/dashboard/ActivityDistributionChart').then((m) => ({ default: m.ActivityDistributionChart })),
+  { ssr: false, loading: () => <Skeleton className="h-[220px] w-full rounded-lg" /> }
+)
 import { PeriodSelector } from '@/components/dashboard/PeriodSelector'
 import { BUFilterSelect } from '@/components/shared/BUFilterSelect'
 import { CompanyFilterSelect } from '@/components/shared/CompanyFilterSelect'
@@ -163,15 +175,10 @@ export default async function DashboardPage({
   const businessUnits = (busData ?? []) as BusinessUnit[]
   const companies = (companiesData ?? []) as Company[]
 
-  let activeCompanyName: string | null = null
-  if (companyId) {
-    const { data: company } = await supabase
-      .from('companies')
-      .select('name')
-      .eq('id', companyId)
-      .single()
-    activeCompanyName = company?.name ?? null
-  }
+  // Resolve nome da empresa ativa a partir dos dados já carregados
+  const activeCompanyName = companyId
+    ? (companies.find((c) => c.id === companyId)?.name ?? null)
+    : null
 
   const sevenDaysFromNow = new Date()
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -71,12 +71,15 @@ export function KanbanBoard({ deals: initialDeals, workspaceId, leads, companyId
     }
   }
 
-  const dealsByStage = STAGES.reduce<Record<DealStage, DealWithLead[]>>(
-    (acc, stage) => {
-      acc[stage] = deals.filter((d) => d.stage === stage)
-      return acc
-    },
-    {} as Record<DealStage, DealWithLead[]>
+  const dealsByStage = useMemo(
+    () => STAGES.reduce<Record<DealStage, DealWithLead[]>>(
+      (acc, stage) => {
+        acc[stage] = deals.filter((d) => d.stage === stage)
+        return acc
+      },
+      {} as Record<DealStage, DealWithLead[]>
+    ),
+    [deals]
   )
 
   return (

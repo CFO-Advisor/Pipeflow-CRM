@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getCachedAuthUsers } from '@/lib/cached-queries'
 import { CalendarioClient } from '@/components/calendario/CalendarioClient'
 import type { Company } from '@/types'
 
@@ -48,9 +49,9 @@ export default async function CalendarioPage() {
     .select('id, user_id, role, sales_role')
     .eq('workspace_id', workspaceId)
 
-  const { data: authData } = await service.auth.admin.listUsers({ perPage: 1000 })
+  const authUsers = await getCachedAuthUsers()
   const userMap = new Map(
-    (authData?.users ?? []).map((u) => [
+    authUsers.map((u) => [
       u.id,
       { email: u.email ?? '', name: u.user_metadata?.full_name as string | undefined },
     ])

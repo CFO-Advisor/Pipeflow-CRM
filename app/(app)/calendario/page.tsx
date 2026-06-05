@@ -44,10 +44,13 @@ export default async function CalendarioPage() {
     : null
 
   // Membros da equipe com nomes
-  const { data: memberRows } = await service
+  const { data: memberRowsRaw } = await service
     .from('workspace_members')
     .select('id, user_id, role, sales_role')
     .eq('workspace_id', workspaceId)
+
+  type MemberRow = { id: string; user_id: string | null; role: string; sales_role: string | null }
+  const memberRows = (memberRowsRaw ?? []) as MemberRow[]
 
   const authUsers = await getCachedAuthUsers()
   const userMap = new Map(
@@ -57,11 +60,11 @@ export default async function CalendarioPage() {
     ])
   )
 
-  const members = (memberRows ?? []).map((m) => {
+  const members = memberRows.map((m) => {
     const auth = m.user_id ? userMap.get(m.user_id) : null
     return {
-      id: m.id as string,
-      userId: (m.user_id as string | null) ?? null,
+      id: m.id,
+      userId: m.user_id,
       email: auth?.email ?? '',
       name: auth?.name,
     }

@@ -237,7 +237,7 @@ export default async function DashboardPage({
 
   const monthlyMap = new Map<string, { total: number; won: number }>()
   for (const d of allDeals12m ?? []) {
-    const key = getMonthKey(d.created_at)
+    const key = getMonthKey(d.created_at ?? '')
     const entry = monthlyMap.get(key) ?? { total: 0, won: 0 }
     entry.total += 1
     if (d.stage === 'closed_won') entry.won += 1
@@ -265,7 +265,7 @@ export default async function DashboardPage({
 
   const revenueMap = new Map<string, number>()
   for (const d of wonDeals12m ?? []) {
-    const key = getMonthKey(d.updated_at)
+    const key = getMonthKey(d.updated_at ?? '')
     revenueMap.set(key, (revenueMap.get(key) ?? 0) + (d.value ?? 0))
   }
   const monthlyRevenueData = Array.from(revenueMap.entries()).map(([month, revenue]) => ({
@@ -285,7 +285,7 @@ export default async function DashboardPage({
   const lastActivityMap = new Map<string, Date>()
   for (const a of activities ?? []) {
     const prev = lastActivityMap.get(a.lead_id)
-    const curr = new Date(a.created_at)
+    const curr = new Date(a.created_at ?? '')
     if (!prev || curr > prev) lastActivityMap.set(a.lead_id, curr)
   }
 

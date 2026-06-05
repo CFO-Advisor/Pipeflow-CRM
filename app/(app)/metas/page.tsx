@@ -50,7 +50,7 @@ export default async function MetasPage() {
     const deals = (closedWonDeals.data ?? []).filter(d => {
       const member = members.find(m => m.id === goal.member_id)
       if (!member || d.assigned_to !== member.user_id) return false
-      const updatedAt = new Date(d.updated_at)
+      const updatedAt = new Date(d.updated_at ?? '')
       return updatedAt >= new Date(goal.period_start) && updatedAt <= new Date(goal.period_end + 'T23:59:59')
     })
     const achieved = goal.goal_type === 'revenue'

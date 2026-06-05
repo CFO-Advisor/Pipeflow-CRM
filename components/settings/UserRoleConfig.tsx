@@ -54,7 +54,7 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const [salesRole, setSalesRole] = useState<SalesRole>(member.sales_role)
+  const [salesRole, setSalesRole] = useState<SalesRole>(member.sales_role as SalesRole)
   const [managerId, setManagerId] = useState<string>(member.manager_id ?? 'none')
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<string>>(
     new Set(member.company_access?.map((a) => a.company_id) ?? [])
@@ -63,7 +63,7 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
     Object.fromEntries(
       RESOURCES.map((r) => {
         const existing = member.permissions?.find((p) => p.resource === r)
-        const defaults = DEFAULT_PERMISSIONS[member.sales_role]
+        const defaults = DEFAULT_PERMISSIONS[member.sales_role as SalesRole]
         return [r, existing ?? defaults]
       })
     ) as Record<PermissionResource, Omit<UserPermission, 'id' | 'member_id' | 'resource'>>
@@ -73,7 +73,7 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
     (m) =>
       m.id !== member.id &&
       m.user_id !== currentUserId &&
-      (['master', 'director', 'manager'] as SalesRole[]).includes(m.sales_role)
+      (['master', 'director', 'manager'] as SalesRole[]).includes(m.sales_role as SalesRole)
   )
 
   function toggleCompany(companyId: string) {
@@ -185,7 +185,7 @@ export function UserRoleConfig({ member, companies, allMembers, currentUserId }:
                       <SelectItem value="none">Sem superior</SelectItem>
                       {eligibleManagers.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
-                          {m.name ?? m.email} ({SALES_ROLE_LABELS[m.sales_role]})
+                          {m.name ?? m.email} ({SALES_ROLE_LABELS[m.sales_role as SalesRole]})
                         </SelectItem>
                       ))}
                     </SelectContent>

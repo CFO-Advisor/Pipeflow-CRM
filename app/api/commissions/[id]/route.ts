@@ -19,8 +19,9 @@ export async function PATCH(
   const service = createServiceClient()
   const { status } = await req.json()
 
-  const update: Record<string, unknown> = { status }
-  if (status === 'paid') update.paid_at = new Date().toISOString()
+  const update = status === 'paid'
+    ? { status: status as 'paid' | 'pending', paid_at: new Date().toISOString() }
+    : { status: status as 'paid' | 'pending' }
 
   const { data, error } = await service
     .from('commissions')

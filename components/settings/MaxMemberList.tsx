@@ -13,7 +13,7 @@ type MaxMember = {
   id: string
   user_id: string | null
   role: string
-  sales_role: SalesRole
+  sales_role: string
   manager_id: string | null
   invited_email: string | null
   email: string
@@ -21,7 +21,7 @@ type MaxMember = {
   company_access?: Array<{ company_id: string }>
   permissions?: Array<{ resource: string; can_view: boolean; can_create: boolean; can_edit: boolean; can_delete: boolean; data_scope: string }>
   workspace_id: string
-  joined_at: string
+  joined_at: string | null
 }
 
 interface MaxMemberListProps {

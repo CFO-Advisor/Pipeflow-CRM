@@ -30,7 +30,7 @@ export interface Company {
   cnpj: string | null
   logo_url: string | null
   active: boolean
-  created_at: string
+  created_at: string | null
 }
 
 export interface BusinessUnit {
@@ -46,11 +46,11 @@ export interface WorkspaceMember {
   id: string
   workspace_id: string
   user_id: string | null
-  role: UserRole
-  sales_role: SalesRole
+  role: string
+  sales_role: string
   manager_id: string | null
   invited_email: string | null
-  joined_at: string
+  joined_at: string | null
 }
 
 export interface UserPermission {
@@ -83,8 +83,8 @@ export interface Lead {
   status: string
   assigned_to: string | null
   photo_url: string | null
-  created_at: string
-  updated_at: string
+  created_at: string | null
+  updated_at: string | null
 }
 
 export interface Deal {

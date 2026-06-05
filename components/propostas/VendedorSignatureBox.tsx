@@ -8,13 +8,15 @@ interface VendedorSignatureBoxProps {
   proposalId: string
   signedAt: string | null
   hasPdf: boolean
+  clientHadSigned?: boolean  // indica se o cliente já tinha assinado antes
 }
 
-export function VendedorSignatureBox({ proposalId, signedAt, hasPdf }: VendedorSignatureBoxProps) {
+export function VendedorSignatureBox({ proposalId, signedAt, hasPdf, clientHadSigned }: VendedorSignatureBoxProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
+  const [clientReset, setClientReset] = useState(false)
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -37,6 +39,7 @@ export function VendedorSignatureBox({ proposalId, signedAt, hasPdf }: VendedorS
 
     if (!res.ok) { setError(data.error || 'Erro no upload.'); return }
     if (fileInputRef.current) fileInputRef.current.value = ''
+    if (data.clientSignatureReset) setClientReset(true)
     router.refresh()
   }
 
@@ -84,6 +87,13 @@ export function VendedorSignatureBox({ proposalId, signedAt, hasPdf }: VendedorS
       </label>
 
       {error && <p className="text-xs text-destructive">{error}</p>}
+
+      {/* Aviso após substituição que invalidou a assinatura do cliente */}
+      {(clientReset || (clientHadSigned && signedAt)) && (
+        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded px-2 py-1.5">
+          ⚠️ A assinatura do cliente foi invalidada. O cliente precisará assinar novamente.
+        </p>
+      )}
     </div>
   )
 }

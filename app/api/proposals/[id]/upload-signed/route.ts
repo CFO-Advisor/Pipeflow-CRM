@@ -20,7 +20,7 @@ export async function POST(
 
   const { data: proposal } = await service
     .from('proposals')
-    .select('id')
+    .select('id, signed_by_client_at')
     .eq('id', id)
     .eq('workspace_id', workspaceId)
     .single()
@@ -42,14 +42,31 @@ export async function POST(
 
   if (uploadErr) return NextResponse.json({ error: uploadErr.message }, { status: 500 })
 
+  // Se o cliente já havia assinado, invalidar a assinatura dele pois o documento mudou
+  const clientHadSigned = !!proposal.signed_by_client_at
+  if (clientHadSigned) {
+    // Remover o PDF antigo do cliente do storage
+    await service.storage
+      .from('deal-attachments')
+      .remove([`proposals/${id}/client-signed.pdf`])
+  }
+
   await service
     .from('proposals')
     .update({
       signed_pdf_path: filePath,
       signed_by_seller_at: new Date().toISOString(),
       status: 'awaiting_signature',
+      // Resetar assinatura do cliente se ele já havia assinado
+      ...(clientHadSigned && {
+        signed_by_client_at: null,
+      }),
     })
     .eq('id', id)
 
-  return NextResponse.json({ success: true, path: filePath })
+  return NextResponse.json({
+    success: true,
+    path: filePath,
+    clientSignatureReset: clientHadSigned,
+  })
 }

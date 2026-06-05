@@ -129,6 +129,7 @@ export default async function PropostaDetailPage({
               proposalId={p.id}
               signedAt={p.signed_by_seller_at}
               hasPdf={!!p.signed_pdf_path}
+              clientHadSigned={!!p.signed_by_client_at}
             />
             <div className="border border-border rounded-lg p-4 space-y-3">
               <p className="text-sm font-semibold">Cliente</p>

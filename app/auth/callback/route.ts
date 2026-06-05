@@ -11,17 +11,29 @@ export async function GET(request: Request) {
   // Prevent open redirect: only allow safe relative paths
   const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
 
+  // Supabase redireciona com ?error=... quando o token expirou ou é inválido
+  const supabaseError = searchParams.get('error')
+  const supabaseErrorCode = searchParams.get('error_code')
+  if (supabaseError) {
+    console.error('[auth/callback] Supabase error:', supabaseError, supabaseErrorCode)
+    const isExpired = supabaseErrorCode === 'otp_expired'
+    const errorParam = isExpired ? 'link_expired' : 'auth_callback_failed'
+    return NextResponse.redirect(`${origin}/login?error=${errorParam}`)
+  }
+
   const supabase = await createClient()
   let user: User | null = null
   let sessionError: unknown = null
 
   if (code) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) console.error('[auth/callback] exchangeCodeForSession error:', error.message)
     user = data.user
     sessionError = error
   } else if (tokenHash && type) {
     // Fluxo de confirmação de e-mail (signup/email change) — usa token_hash + type
     const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
+    if (error) console.error('[auth/callback] verifyOtp error:', error.message)
     user = data.user
     sessionError = error
   }

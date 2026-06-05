@@ -72,7 +72,11 @@ export async function POST(req: NextRequest) {
   // Envia convite pelo Supabase Auth — usa a infraestrutura de e-mail já configurada no projeto,
   // sem depender de domínio verificado em serviço externo.
   const service = createServiceClient()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  // Deriva a URL do app a partir do header da requisição quando NEXT_PUBLIC_APP_URL não está definido,
+  // garantindo que o link de convite funcione tanto em produção quanto em desenvolvimento.
+  const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000'
+  const protocol = req.headers.get('x-forwarded-proto') ?? 'http'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`
 
   const { error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${appUrl}/auth/callback`,

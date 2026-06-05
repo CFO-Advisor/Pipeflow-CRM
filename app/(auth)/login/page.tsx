@@ -59,7 +59,9 @@ function LoginForm() {
             )}
             {(error || authError) && (
               <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                {authError === 'auth_callback_failed'
+                {authError === 'link_expired'
+                  ? 'O link de convite expirou. Peça ao administrador para reenviar o convite.'
+                  : authError === 'auth_callback_failed'
                   ? 'Link de confirmação inválido ou expirado. Tente criar a conta novamente.'
                   : error}
               </div>

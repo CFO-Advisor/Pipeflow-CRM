@@ -1,3 +1,4 @@
+import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { createServiceClient } from './supabase/service'
 import type { Company, BusinessUnit } from '@/types'

@@ -82,6 +82,20 @@ export async function PATCH(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
+  // Registrar atividade no lead quando proposta é marcada como enviada
+  if (status === 'sent' && result.proposal.status !== 'sent' && result.proposal.lead_id) {
+    await service.from('activities').insert({
+      workspace_id: result.workspaceId,
+      lead_id: result.proposal.lead_id,
+      company_id: result.proposal.deal_id
+        ? (await service.from('deals').select('company_id').eq('id', result.proposal.deal_id).single()).data?.company_id ?? null
+        : null,
+      author_id: result.user.id,
+      type: 'proposal',
+      description: `Proposta enviada: ${updated.title}`,
+    })
+  }
+
   // Substituir itens se fornecidos
   if (items) {
     await service.from('proposal_items').delete().eq('proposal_id', id)

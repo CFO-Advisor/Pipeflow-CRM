@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   const service = createServiceClient()
 
   // Verificar que o deal pertence ao workspace e buscar lead_id automaticamente
-  const { data: deal } = await service.from('deals').select('id, lead_id').eq('id', deal_id).eq('workspace_id', workspaceId).single()
+  const { data: deal } = await service.from('deals').select('id, lead_id, company_id').eq('id', deal_id).eq('workspace_id', workspaceId).single()
   if (!deal) return NextResponse.json({ error: 'Deal não encontrado.' }, { status: 404 })
 
   // Usar lead_id do deal se não foi informado explicitamente
@@ -73,6 +73,18 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Registrar atividade de proposta criada no lead
+  if (resolvedLeadId) {
+    await service.from('activities').insert({
+      workspace_id: workspaceId,
+      lead_id: resolvedLeadId,
+      company_id: deal.company_id ?? null,
+      author_id: user.id,
+      type: 'proposal',
+      description: `Proposta criada: ${title.trim()}`,
+    })
+  }
 
   // Inserir itens
   if (templateItems.length > 0) {

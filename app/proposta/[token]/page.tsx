@@ -119,7 +119,12 @@ export default async function PropostaPublicPage({
               Para assinatura com validade jurídica (ICP-Brasil / Gov.br): baixe o PDF, assine com seu certificado digital e envie o arquivo assinado ao emissor da proposta.
             </p>
 
-            <PropostaPublicActions token={token} status={proposal.status} />
+            <PropostaPublicActions
+              token={token}
+              status={proposal.status}
+              hasVendorPdf={!!proposal.signed_pdf_path}
+              clientSignedAt={proposal.signed_by_client_at}
+            />
           </CardContent>
         </Card>
 

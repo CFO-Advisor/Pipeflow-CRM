@@ -121,15 +121,15 @@ export function PropostasClient({ proposals }: PropostasClientProps) {
               <CardContent className="py-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <Link href={`/propostas/${proposal.id}`} className="text-sm font-semibold text-foreground hover:text-blue-600 truncate">
                         {proposal.title}
                       </Link>
                       <PropostaStatusBadge status={proposal.status} />
+                      {proposal.leadCompany && (
+                        <span className="text-xs text-muted-foreground">{proposal.leadCompany}</span>
+                      )}
                     </div>
-                    {proposal.leadCompany && (
-                      <p className="text-xs text-muted-foreground mb-1">{proposal.leadCompany}</p>
-                    )}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       <span className="font-medium text-foreground">{formatCurrency(proposal.total_value)}</span>
                       {proposal.valid_until && (

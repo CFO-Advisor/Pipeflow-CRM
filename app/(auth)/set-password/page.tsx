@@ -43,7 +43,10 @@ export default function SetPasswordPage() {
     setError('')
 
     const supabase = createClient()
-    const { error: updateError } = await supabase.auth.updateUser({ password })
+    const { error: updateError } = await supabase.auth.updateUser({
+      password,
+      data: { must_change_password: false },
+    })
 
     if (updateError) {
       setError('Erro ao definir a senha. Tente novamente.')
@@ -69,7 +72,7 @@ export default function SetPasswordPage() {
           </div>
           <CardTitle className="text-2xl">Crie sua senha</CardTitle>
           <CardDescription>
-            Você foi convidado para o workspace. Defina uma senha para acessar o sistema.
+            Defina uma senha pessoal para acessar o sistema.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

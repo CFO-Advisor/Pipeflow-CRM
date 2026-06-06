@@ -3,10 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
 export async function POST(req: NextRequest) {
-  const { email, workspaceId } = await req.json()
+  const { name, email, password, workspaceId, companyIds } = await req.json()
 
-  if (!email || !workspaceId) {
+  if (!name || !email || !password || !workspaceId) {
     return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 })
+  }
+  if (password.length < 6) {
+    return NextResponse.json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -21,12 +24,12 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (member?.role !== 'admin') {
-    return NextResponse.json({ error: 'Apenas admins podem convidar.' }, { status: 403 })
+    return NextResponse.json({ error: 'Apenas admins podem cadastrar colaboradores.' }, { status: 403 })
   }
 
   const { data: workspace } = await supabase
     .from('workspaces')
-    .select('plan, name')
+    .select('plan')
     .eq('id', workspaceId)
     .single()
 
@@ -44,51 +47,37 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Verificar se já existe convite pendente ou membro ativo com este e-mail
-  const { data: existing } = await supabase
-    .from('workspace_members')
-    .select('id, user_id')
-    .eq('workspace_id', workspaceId)
-    .eq('invited_email', email)
-    .maybeSingle()
-
-  if (existing?.user_id) {
-    return NextResponse.json({ error: 'Este usuário já é membro do workspace.' }, { status: 400 })
-  }
-  if (existing) {
-    return NextResponse.json({ error: 'Já existe um convite pendente para este e-mail.' }, { status: 400 })
-  }
-
-  const { error: insertError } = await supabase.from('workspace_members').insert({
-    workspace_id: workspaceId,
-    invited_email: email,
-    role: 'member',
-  })
-
-  if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 })
-  }
-
-  // Envia convite pelo Supabase Auth — usa a infraestrutura de e-mail já configurada no projeto,
-  // sem depender de domínio verificado em serviço externo.
   const service = createServiceClient()
-  // Deriva a URL do app a partir do header da requisição quando NEXT_PUBLIC_APP_URL não está definido,
-  // garantindo que o link de convite funcione tanto em produção quanto em desenvolvimento.
-  const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000'
-  const protocol = req.headers.get('x-forwarded-proto') ?? 'http'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`
 
-  const { error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${appUrl}/auth/callback`,
-    data: { workspace_name: workspace?.name },
+  const { data: created, error: createError } = await service.auth.admin.createUser({
+    email,
+    password,
+    user_metadata: { full_name: name, must_change_password: true },
+    email_confirm: true,
   })
 
-  if (inviteError) {
-    console.error('[invite] Supabase invite error:', inviteError.message)
-    return NextResponse.json({
-      success: true,
-      warning: `Convite salvo, mas o e-mail não pôde ser enviado automaticamente. Informe o colaborador para acessar ${appUrl}/register e usar o e-mail ${email}.`,
-    })
+  if (createError) {
+    const msg = createError.message.toLowerCase().includes('already registered')
+      ? 'Este e-mail já possui uma conta no sistema.'
+      : createError.message
+    return NextResponse.json({ error: msg }, { status: 400 })
+  }
+
+  const { data: newMember, error: insertError } = await service
+    .from('workspace_members')
+    .insert({ workspace_id: workspaceId, user_id: created.user.id, role: 'member' })
+    .select('id')
+    .single()
+
+  if (insertError || !newMember) {
+    await service.auth.admin.deleteUser(created.user.id)
+    return NextResponse.json({ error: insertError?.message ?? 'Erro ao inserir membro.' }, { status: 500 })
+  }
+
+  if (workspace?.plan === 'max' && Array.isArray(companyIds) && companyIds.length > 0) {
+    await service.from('user_company_access').insert(
+      companyIds.map((company_id: string) => ({ member_id: newMember.id, company_id }))
+    )
   }
 
   return NextResponse.json({ success: true })

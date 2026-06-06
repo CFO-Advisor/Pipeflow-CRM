@@ -15,6 +15,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/login')
 
+  if (user.user_metadata?.must_change_password === true) {
+    redirect('/set-password')
+  }
+
   const service = createServiceClient()
   const { data: memberships } = await service
     .from('workspace_members')

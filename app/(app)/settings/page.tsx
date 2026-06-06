@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { InviteForm } from '@/components/settings/InviteForm'
 import { MemberList } from '@/components/settings/MemberList'
 import { MaxMemberList } from '@/components/settings/MaxMemberList'
+import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm'
 import type { Company } from '@/types'
 
 const PLAN_LABELS = { free: 'Free', pro: 'Pro', max: 'MAX' }
@@ -199,7 +200,12 @@ export default async function SettingsPage() {
         <CardContent className="space-y-4">
           {isAdmin && (
             <>
-              <InviteForm workspaceId={workspaceId} disabled={memberLimitReached} />
+              <InviteForm
+                workspaceId={workspaceId}
+                disabled={memberLimitReached}
+                isMax={isMax}
+                companies={companies}
+              />
               <Separator />
             </>
           )}
@@ -221,6 +227,9 @@ export default async function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Trocar senha */}
+      <ChangePasswordForm />
 
       {/* Banner de upgrade para MAX */}
       {workspace.plan !== 'max' && (

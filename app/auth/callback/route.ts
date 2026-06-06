@@ -58,7 +58,7 @@ export async function GET(request: Request) {
           .update({ user_id: user.id, invited_email: null })
           .eq('id', pendingInvite.id)
 
-        const response = NextResponse.redirect(`${origin}/auth/set-password`)
+        const response = NextResponse.redirect(`${origin}/set-password`)
         response.cookies.set('current_workspace_id', pendingInvite.workspace_id, {
           path: '/',
           httpOnly: true,
